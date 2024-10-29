@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MessageList } from './MessageList';
 import { MessageInput } from './MessageInput';
 import { useChat } from '../../hooks/useChat';
@@ -7,7 +7,9 @@ import {
   History, 
   RefreshCcw, 
   Download, 
+  Settings,
   FileText,
+  X
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { ScrollArea } from '../ui/scroll-area';
@@ -18,23 +20,55 @@ import { ErrorMessage } from '../common/ErrorMessage';
 import { EmptyState } from '../common/EmptyState';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 
-export const ChatWindow = () => {
+export const ChatWindow = ({ 
+  currentConversation,
+  onToggleHistory
+}) => {
   const { 
     messages, 
     isLoading, 
     error, 
     sendMessage,
-    conversationId 
+    conversationId,
+    loadConversation,
+    createNewConversation
   } = useChat();
-  
+
   const [settings, setSettings] = useState({
-    strategy: 'standard',
+    strategy: PROMPT_STRATEGIES.STANDARD,
     responseFormat: RESPONSE_FORMATS.DEFAULT,
-    contextMode: 'flexible'
+    contextMode: CONTEXT_MODES.FLEXIBLE
   });
-  const [showHistory, setShowHistory] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [selectedSources, setSelectedSources] = useState([]);
   const [showSourcesDialog, setShowSourcesDialog] = useState(false);
+
+  // Load conversation when selected
+  useEffect(() => {
+    if (currentConversation?.conversation_id) {
+      loadConversation(currentConversation.conversation_id);
+    }
+  }, [currentConversation?.conversation_id, loadConversation]);
+
+  const formatConversationId = (id) => {
+    if (!id) return '';
+    const first4 = id.slice(0, 4);
+    const last4 = id.slice(-4);
+    return `ID: ${first4}-${last4}`;
+  };
+
+  const getConversationTitle = () => {
+    if (currentConversation?.title) {
+      return currentConversation.title;
+    }
+    if (currentConversation?.questions_asked?.[0]) {
+      const firstQuestion = currentConversation.questions_asked[0];
+      return firstQuestion.length > 40 
+        ? `${firstQuestion.substring(0, 40)}...` 
+        : firstQuestion;
+    }
+    return 'New Chat';
+  };
 
   const handleSettingChange = (key, value) => {
     setSettings(prev => ({
@@ -71,16 +105,16 @@ export const ChatWindow = () => {
     URL.revokeObjectURL(url);
   };
 
+  const handleNewChat = () => {
+    if (window.confirm('Start a new chat? This will clear the current conversation.')) {
+      createNewConversation();
+    }
+  };
+
   const handleViewSources = (message) => {
     if (message.sources && message.sources.length > 0) {
       setSelectedSources(message.sources);
       setShowSourcesDialog(true);
-    }
-  };
-
-  const handleNewChat = () => {
-    if (window.confirm('Start a new chat? This will clear the current conversation.')) {
-      window.location.reload();
     }
   };
 
@@ -118,25 +152,39 @@ export const ChatWindow = () => {
   return (
     <div className="flex flex-col h-full bg-white rounded-lg shadow-sm border">
       {/* Header */}
-      <div className="border-b flex-none bg-white relative z-[51]">
+      <div className="border-b flex-none bg-white relative z-30">
         {/* Top bar with title and actions */}
         <div className="flex items-center justify-between p-4">
-          <div className="flex items-center gap-2">
-            <h2 className="text-lg font-semibold">Chat</h2>
-            {conversationId && (
-              <span className="text-xs text-muted-foreground">
-                ID: {conversationId.slice(0, 8)}...
-              </span>
-            )}
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onToggleHistory}
+              className="lg:hidden"
+              title="Toggle History"
+            >
+              <History className="h-5 w-5" />
+            </Button>
+            <div className="flex flex-col">
+              <h2 className="text-lg font-semibold truncate max-w-[300px]">
+                {getConversationTitle()}
+              </h2>
+              {conversationId && (
+                <span className="text-xs text-muted-foreground font-mono">
+                  {formatConversationId(conversationId)}
+                </span>
+              )}
+            </div>
           </div>
+          
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setShowHistory(true)}
-              title="View History"
+              onClick={() => setShowSettings(!showSettings)}
+              title="Settings"
             >
-              <History className="h-5 w-5" />
+              <Settings className="h-5 w-5" />
             </Button>
             <Button
               variant="ghost"
@@ -158,67 +206,75 @@ export const ChatWindow = () => {
         </div>
 
         {/* Settings bar */}
-        <div className="px-4 pb-4 grid grid-cols-3 gap-4">
-          <div className="space-y-2">
-            <span className="text-sm font-medium">Strategy</span>
-            <Select 
-              value={settings.strategy}
-              onValueChange={(value) => handleSettingChange('strategy', value)}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.entries(PROMPT_STRATEGIES).map(([key, value]) => (
-                  <SelectItem key={key} value={value}>{key.charAt(0) + key.slice(1).toLowerCase()}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+        {showSettings && (
+          <div className="px-4 pb-4 grid grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <span className="text-sm font-medium">Strategy</span>
+              <Select 
+                value={settings.strategy}
+                onValueChange={(value) => handleSettingChange('strategy', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="z-50">
+                  {Object.entries(PROMPT_STRATEGIES).map(([key, value]) => (
+                    <SelectItem key={key} value={value}>
+                      {key.charAt(0) + key.slice(1).toLowerCase()}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-          <div className="space-y-2">
-            <span className="text-sm font-medium">Format</span>
-            <Select
-              value={settings.responseFormat}
-              onValueChange={(value) => handleSettingChange('responseFormat', value)}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.entries(RESPONSE_FORMATS).map(([key, value]) => (
-                  <SelectItem key={key} value={value}>{key.charAt(0) + key.slice(1).toLowerCase()}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+            <div className="space-y-2">
+              <span className="text-sm font-medium">Format</span>
+              <Select
+                value={settings.responseFormat}
+                onValueChange={(value) => handleSettingChange('responseFormat', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="z-50">
+                  {Object.entries(RESPONSE_FORMATS).map(([key, value]) => (
+                    <SelectItem key={key} value={value}>
+                      {key.charAt(0) + key.slice(1).toLowerCase()}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-          <div className="space-y-2">
-            <span className="text-sm font-medium">Context</span>
-            <Select
-              value={settings.contextMode}
-              onValueChange={(value) => handleSettingChange('contextMode', value)}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.entries(CONTEXT_MODES).map(([key, value]) => (
-                  <SelectItem key={key} value={value}>{key.charAt(0) + key.slice(1).toLowerCase()}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="space-y-2">
+              <span className="text-sm font-medium">Context</span>
+              <Select
+                value={settings.contextMode}
+                onValueChange={(value) => handleSettingChange('contextMode', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="z-50">
+                  {Object.entries(CONTEXT_MODES).map(([key, value]) => (
+                    <SelectItem key={key} value={value}>
+                      {key.charAt(0) + key.slice(1).toLowerCase()}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Chat Content */}
-      <div className="flex-1 min-h-0 overflow-hidden relative z-[1]">
+      <div className="flex-1 min-h-0 overflow-hidden relative">
         {renderContent()}
       </div>
 
       {/* Input Area */}
-      <div className="border-t p-4 flex-none bg-white relative z-[2]">
+      <div className="border-t p-4 flex-none bg-white relative">
         <MessageInput 
           onSend={handleSend} 
           disabled={isLoading || !conversationId}
@@ -259,37 +315,6 @@ export const ChatWindow = () => {
               </div>
             ))}
           </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* History Dialog */}
-      <Dialog open={showHistory} onOpenChange={setShowHistory}>
-        <DialogContent className="sm:max-w-[700px]">
-          <DialogHeader>
-            <DialogTitle>Chat History</DialogTitle>
-          </DialogHeader>
-          <ScrollArea className="h-[60vh]">
-            <div className="space-y-4 p-4">
-              {messages.map((msg, index) => (
-                <div 
-                  key={index}
-                  className={`p-4 rounded-lg ${
-                    msg.role === 'user' ? 'bg-primary/10' : 'bg-secondary'
-                  }`}
-                >
-                  <div className="flex justify-between items-start mb-2">
-                    <span className="font-medium capitalize">{msg.role}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {new Date(msg.timestamp).toLocaleString()}
-                    </span>
-                  </div>
-                  <p className="text-sm whitespace-pre-wrap break-words">
-                    {msg.content}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </ScrollArea>
         </DialogContent>
       </Dialog>
     </div>

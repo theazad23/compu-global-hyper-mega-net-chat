@@ -7,27 +7,39 @@ export const useChat = () => {
   const [error, setError] = useState(null);
   const [conversationId, setConversationId] = useState(null);
 
-  // Initialize conversation when the chat is first loaded
-  useEffect(() => {
-    const initializeChat = async () => {
-      try {
-        const response = await api.createConversation();
-        console.log('Initialized conversation:', response);
-        setConversationId(response.conversation_id);
-      } catch (err) {
-        console.error('Failed to initialize chat:', err);
-        setError('Failed to initialize chat');
-      }
-    };
-
-    if (!conversationId) {
-      initializeChat();
+  const createNewConversation = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await api.createConversation();
+      setConversationId(response.conversation_id);
+      setMessages([]);
+    } catch (err) {
+      console.error('Failed to create conversation:', err);
+      setError('Failed to create new conversation');
+    } finally {
+      setIsLoading(false);
     }
-  }, [conversationId]);
+  }, []);
+
+  const loadConversation = useCallback(async (id) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await api.getConversationDetail(id);
+      setConversationId(id);
+      setMessages(response.messages || []);
+    } catch (err) {
+      console.error('Failed to load conversation:', err);
+      setError('Failed to load conversation');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   const sendMessage = useCallback(async (message, settings = {}) => {
     if (!conversationId) {
-      setError('Chat not initialized');
+      setError('No active conversation');
       return;
     }
 
@@ -35,7 +47,7 @@ export const useChat = () => {
     setError(null);
 
     try {
-      // Add user message to UI immediately
+      // Add user message immediately
       const userMessage = {
         id: Date.now(),
         role: 'user',
@@ -44,19 +56,15 @@ export const useChat = () => {
       };
       setMessages(prev => [...prev, userMessage]);
 
-      // Format the request body to match API expectations
-      const requestBody = {
+      // Send to API
+      const response = await api.continueConversation(conversationId, {
         question: message,
-        conversation_id: conversationId,
-        strategy: settings.strategy.toLowerCase(),
-        response_format: settings.responseFormat.toLowerCase(),
-        context_mode: settings.contextMode.toLowerCase()
-      };
+        strategy: settings.strategy,
+        response_format: settings.responseFormat,
+        context_mode: settings.contextMode
+      });
 
-      // Send message to API
-      const response = await api.ask(requestBody);
-      
-      // Add assistant response with sources
+      // Add assistant response
       const assistantMessage = {
         id: Date.now() + 1,
         role: 'assistant',
@@ -74,11 +82,20 @@ export const useChat = () => {
     }
   }, [conversationId]);
 
+  // Initialize conversation if none exists
+  useEffect(() => {
+    if (!conversationId) {
+      createNewConversation();
+    }
+  }, [conversationId, createNewConversation]);
+
   return {
     messages,
     isLoading,
     error,
     sendMessage,
     conversationId,
+    loadConversation,
+    createNewConversation
   };
 };

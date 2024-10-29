@@ -15,7 +15,6 @@ const handleResponse = async (response) => {
     throw new ApiError(error.message || 'API request failed', response.status);
   }
   const data = await response.json();
-  console.log('Raw API Response:', data);
   return data;
 };
 
@@ -28,6 +27,87 @@ export const api = {
       return handleResponse(response);
     } catch (error) {
       console.error('Create conversation error:', error);
+      throw error;
+    }
+  },
+
+  async getConversations() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/conversations`);
+      return handleResponse(response);
+    } catch (error) {
+      console.error('Get conversations error:', error);
+      throw error;
+    }
+  },
+
+  async getConversation(conversationId) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/conversation/${conversationId}`);
+      return handleResponse(response);
+    } catch (error) {
+      console.error('Get conversation error:', error);
+      throw error;
+    }
+  },
+
+  async getConversationDetail(conversationId, messageLimit = 50, beforeTimestamp = null) {
+    try {
+      const params = new URLSearchParams({
+        message_limit: messageLimit.toString()
+      });
+      if (beforeTimestamp) {
+        params.append('before_timestamp', beforeTimestamp);
+      }
+      const response = await fetch(
+        `${API_BASE_URL}/conversation/${conversationId}/detail?${params}`
+      );
+      return handleResponse(response);
+    } catch (error) {
+      console.error('Get conversation detail error:', error);
+      throw error;
+    }
+  },
+
+  async updateConversation(conversationId, { title, metadata }) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/conversation/${conversationId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, metadata })
+      });
+      return handleResponse(response);
+    } catch (error) {
+      console.error('Update conversation error:', error);
+      throw error;
+    }
+  },
+
+  async continueConversation(conversationId, requestBody) {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/conversation/${conversationId}/continue`, 
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(requestBody)
+        }
+      );
+      return handleResponse(response);
+    } catch (error) {
+      console.error('Continue conversation error:', error);
+      throw error;
+    }
+  },
+
+  async deleteConversation(conversationId) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/conversation/${conversationId}`, {
+        method: 'DELETE',
+      });
+      return handleResponse(response);
+    } catch (error) {
+      console.error('Delete conversation error:', error);
       throw error;
     }
   },
@@ -62,17 +142,8 @@ export const api = {
 
   async getDocuments() {
     try {
-      console.log('Fetching documents...');
       const response = await fetch(`${API_BASE_URL}/documents`);
-      const data = await handleResponse(response);
-      // Log the structure of the response
-      console.log('Response structure:', {
-        hasDocuments: 'documents' in data,
-        keys: Object.keys(data),
-        type: typeof data,
-        isArray: Array.isArray(data)
-      });
-      return data;
+      return handleResponse(response);
     } catch (error) {
       console.error('Get documents error:', error);
       throw error;

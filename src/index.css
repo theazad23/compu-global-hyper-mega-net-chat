@@ -73,3 +73,40 @@
 .message-content p {
   @apply break-words;
 }
+
+/* Base z-index hierarchy */
+.select-content {
+  z-index: 50;
+}
+
+.dialog-content {
+  z-index: 60;
+}
+
+/* Ensure dropdowns appear above other content */
+[data-radix-popper-content-wrapper] {
+  z-index: 50 !important;
+}
+
+/* Chat window sections */
+.chat-header {
+  z-index: 30;
+}
+
+.chat-content {
+  z-index: 10;
+}
+
+.chat-input {
+  z-index: 20;
+}
+
+/* History panel */
+.history-panel {
+  z-index: 20;
+}
+
+/* Mobile overlay */
+.mobile-overlay {
+  z-index: 10;
+}
