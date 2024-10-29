@@ -35,8 +35,6 @@ export const useChat = () => {
     setError(null);
 
     try {
-      console.log('Sending message with conversationId:', conversationId);
-      
       // Add user message to UI immediately
       const userMessage = {
         id: Date.now(),
@@ -48,14 +46,14 @@ export const useChat = () => {
 
       // Send message to API
       const response = await api.ask(message, conversationId, settings);
-      console.log('API response:', response);
       
-      // Add assistant response
+      // Add assistant response with sources
       const assistantMessage = {
         id: Date.now() + 1,
         role: 'assistant',
         content: response.response,
         timestamp: new Date().toISOString(),
+        sources: response.sources || [], // Add sources from API response
       };
       setMessages(prev => [...prev, assistantMessage]);
 

@@ -1,13 +1,5 @@
 import React from 'react';
-import ReactMarkdown from 'react-markdown';
 import { RESPONSE_FORMATS } from './constants';
-
-export const formatTimestamp = (timestamp) => {
-  return new Date(timestamp).toLocaleTimeString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-  });
-};
 
 export const formatResponse = (content, format) => {
   switch (format) {
@@ -26,8 +18,8 @@ export const formatResponse = (content, format) => {
     
     case RESPONSE_FORMATS.MARKDOWN:
       return (
-        <div className="message-content prose prose-sm max-w-none">
-          <ReactMarkdown>{content}</ReactMarkdown>
+        <div className="prose prose-sm max-w-none">
+          {content}
         </div>
       );
     
@@ -43,4 +35,11 @@ export const formatResponse = (content, format) => {
     default:
       return <p className="whitespace-pre-wrap">{content}</p>;
   }
+};
+
+export const formatTimestamp = (timestamp) => {
+  return new Date(timestamp).toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit'
+  });
 };

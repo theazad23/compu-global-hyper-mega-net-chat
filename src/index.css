@@ -55,3 +55,21 @@
 .message-content ol {
   @apply list-decimal pl-6 mb-4;
 }
+
+.message-content {
+  @apply break-words;
+}
+
+.message-content pre {
+  @apply overflow-x-auto max-w-full;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.message-content code {
+  @apply break-all;
+}
+
+.message-content p {
+  @apply break-words;
+}
