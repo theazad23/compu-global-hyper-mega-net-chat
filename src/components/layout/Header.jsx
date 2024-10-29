@@ -8,7 +8,7 @@ export const Header = () => {
         <div className="flex items-center justify-between h-full">
           <div className="flex items-center gap-2">
             <MessageSquare className="h-6 w-6 text-primary" />
-            <h1 className="text-xl font-semibold">Compu Global Hyper Mega Net</h1>
+            <h1 className="text-xl font-semibold">Compu Global Hyper Mega Net Chat</h1>
           </div>
           
           <div className="flex items-center gap-4">
