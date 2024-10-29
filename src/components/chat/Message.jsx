@@ -9,7 +9,7 @@ export const Message = ({ message, format = 'default', onViewSources }) => {
   
   return (
     <div className={cn(
-      "flex w-full mb-4 animate-fadeIn", // Add animation
+      "flex w-full mb-4 animate-fadeIn relative z-10", 
       isUser ? "justify-end" : "justify-start"
     )}>
       <div className={cn(

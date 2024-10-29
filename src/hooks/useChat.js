@@ -44,8 +44,17 @@ export const useChat = () => {
       };
       setMessages(prev => [...prev, userMessage]);
 
+      // Format the request body to match API expectations
+      const requestBody = {
+        question: message,
+        conversation_id: conversationId,
+        strategy: settings.strategy.toLowerCase(),
+        response_format: settings.responseFormat.toLowerCase(),
+        context_mode: settings.contextMode.toLowerCase()
+      };
+
       // Send message to API
-      const response = await api.ask(message, conversationId, settings);
+      const response = await api.ask(requestBody);
       
       // Add assistant response with sources
       const assistantMessage = {
@@ -53,7 +62,7 @@ export const useChat = () => {
         role: 'assistant',
         content: response.response,
         timestamp: new Date().toISOString(),
-        sources: response.sources || [], // Add sources from API response
+        sources: response.sources || []
       };
       setMessages(prev => [...prev, assistantMessage]);
 
@@ -64,21 +73,6 @@ export const useChat = () => {
       setIsLoading(false);
     }
   }, [conversationId]);
-
-  // Optional: Persist conversation ID to localStorage
-  useEffect(() => {
-    if (conversationId) {
-      localStorage.setItem('chatConversationId', conversationId);
-    }
-  }, [conversationId]);
-
-  // Optional: Restore conversation ID from localStorage
-  useEffect(() => {
-    const savedConversationId = localStorage.getItem('chatConversationId');
-    if (savedConversationId && !conversationId) {
-      setConversationId(savedConversationId);
-    }
-  }, []);
 
   return {
     messages,

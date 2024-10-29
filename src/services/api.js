@@ -12,10 +12,10 @@ const handleResponse = async (response) => {
     const error = await response.json().catch(() => ({
       message: 'An unknown error occurred'
     }));
-    throw new ApiError(error.message, response.status);
+    throw new ApiError(error.message || 'API request failed', response.status);
   }
   const data = await response.json();
-  console.log('Raw API Response:', data); // Log the raw response
+  console.log('Raw API Response:', data);
   return data;
 };
 
@@ -32,16 +32,13 @@ export const api = {
     }
   },
 
-  async ask(question, conversationId, settings) {
+  async ask(requestBody) {
     try {
+      console.log('Sending request with body:', requestBody);
       const response = await fetch(`${API_BASE_URL}/ask`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          question,
-          conversation_id: conversationId,
-          ...settings
-        })
+        body: JSON.stringify(requestBody)
       });
       return handleResponse(response);
     } catch (error) {
