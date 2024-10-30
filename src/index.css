@@ -32,6 +32,40 @@
   }
 }
 
+@layer utilities {
+  .transition-width {
+    transition-property: width;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 300ms;
+  }
+
+  .animate-collapse {
+    animation: collapse 300ms ease-in-out;
+  }
+
+  .animate-expand {
+    animation: expand 300ms ease-in-out;
+  }
+}
+
+@keyframes collapse {
+  from {
+    width: 20rem;
+  }
+  to {
+    width: 3rem;
+  }
+}
+
+@keyframes expand {
+  from {
+    width: 3rem;
+  }
+  to {
+    width: 20rem;
+  }
+}
+
 .message-content {
   @apply space-y-4;
 }
