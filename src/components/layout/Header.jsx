@@ -1,28 +1,24 @@
 import React from 'react';
-import { MessageSquare } from 'lucide-react';
+import { MessageSquare, Palette } from 'lucide-react';
+import { ThemedButton } from '../ui/button';
 
-export const Header = () => {
-  return (
-    <header className="border-b bg-white">
-      <div className="container mx-auto px-4 h-16">
-        <div className="flex items-center justify-between h-full">
-          <div className="flex items-center gap-2">
-            <MessageSquare className="h-6 w-6 text-primary" />
-            <h1 className="text-xl font-semibold">Compu Global Hyper Mega Net Chat</h1>
-          </div>
-          
-          <div className="flex items-center gap-4">
-            <a
-              href="https://github.com/theazad23/compu-global-hyper-mega-net-chat"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              GitHub
-            </a>
-          </div>
-        </div>
-      </div>
-    </header>
-  );
-};
+export const Header = ({ onThemeClick, theme }) => (
+  <header className={`h-16 border-b ${theme.border} ${theme.bgPrimary} flex items-center justify-between px-6 flex-shrink-0`}>
+    <div className="flex items-center gap-2">
+      <MessageSquare className={`h-6 w-6 ${theme.accent} text-white rounded-lg p-1`} />
+      <h1 className={`text-xl font-semibold ${theme.text}`}>Compu-Global-Hyper-Mega-Net-Chat</h1>
+    </div>
+    <div className="flex items-center gap-3">
+      <ThemedButton 
+        variant="ghost"
+        size="icon"
+        theme={theme}
+        onClick={onThemeClick}
+        className="rounded-full"
+        title="Change theme"
+      >
+        <Palette className={`h-5 w-5 ${theme.icon}`} />
+      </ThemedButton>
+    </div>
+  </header>
+);
