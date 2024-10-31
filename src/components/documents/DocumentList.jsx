@@ -6,7 +6,7 @@ import { ScrollArea } from '../ui/scroll-area';
 import { Trash2, FileText, Upload } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { ErrorMessage } from '../common/ErrorMessage';
-import { EmptyState } from '../common/EmptyState';
+import { EmptyState } from '../shared/EmptyState';
 import { DocumentSkeleton } from '../common/SkeletonLoader.jsx';
 
 export const DocumentList = ({ theme }) => {

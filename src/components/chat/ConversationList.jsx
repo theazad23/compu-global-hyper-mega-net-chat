@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
-import { EmptyState } from '../common/EmptyState';
+import { EmptyState } from '../shared/EmptyState';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 import { api } from '../../services/api';
 
