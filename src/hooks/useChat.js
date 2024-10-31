@@ -6,6 +6,14 @@ export const useChat = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [conversationId, setConversationId] = useState(null);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  useEffect(() => {
+    if (!isInitialized) {
+      createNewConversation();
+      setIsInitialized(true);
+    }
+  }, [isInitialized]);
 
   const createNewConversation = useCallback(async () => {
     setIsLoading(true);
@@ -13,7 +21,8 @@ export const useChat = () => {
     try {
       const response = await api.createConversation();
       setConversationId(response.conversation_id);
-      setMessages([]);
+      setMessages([]); // Clear messages for new conversation
+      return response.conversation_id;
     } catch (err) {
       console.error('Failed to create conversation:', err);
       setError('Failed to create new conversation');
@@ -23,7 +32,10 @@ export const useChat = () => {
   }, []);
 
   const loadConversation = useCallback(async (id) => {
-    if (!id) return;
+    if (!id) {
+      await createNewConversation();
+      return;
+    }
     
     setIsLoading(true);
     setError(null);
@@ -37,7 +49,7 @@ export const useChat = () => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [createNewConversation]);
 
   const sendMessage = useCallback(async (message, settings = {}) => {
     if (!conversationId) {

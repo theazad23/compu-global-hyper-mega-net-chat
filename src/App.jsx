@@ -211,14 +211,45 @@ const App = () => {
   };
 
   const handleNewChat = async () => {
-    if (window.confirm('Start a new chat? This will clear the current conversation.')) {
-      setSelectedConversation(null);
-      await createNewConversation();
-    }
+    setSelectedConversation(null);
+    await createNewConversation();
   };
 
   const handleSendMessage = async (message) => {
     await sendMessage(message, chatSettings);
+  };
+
+  const getChatTitle = () => {
+    if (!selectedConversation) {
+      return "New Chat";
+    }
+    return selectedConversation.title || 
+           (selectedConversation.questions_asked?.[0]?.length > 40 
+             ? `${selectedConversation.questions_asked[0].substring(0, 40)}...` 
+             : selectedConversation.questions_asked?.[0]) || 
+           "New Chat";
+  };
+
+  const handleExportChat = () => {
+    if (!messages.length) return;
+    
+    const chatHistory = messages.map(msg => ({
+      role: msg.role,
+      content: msg.content,
+      timestamp: msg.timestamp
+    }));
+    
+    const blob = new Blob([JSON.stringify(chatHistory, null, 2)], { 
+      type: 'application/json' 
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `chat-history-${conversationId || 'new'}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -270,6 +301,7 @@ const App = () => {
               <ConversationList
                 onSelectConversation={handleSelectConversation}
                 currentConversationId={selectedConversation?.conversation_id}
+                onNewChat={handleNewChat}
                 theme={theme}
               />
             ) : (
@@ -293,13 +325,14 @@ const App = () => {
                   </ThemedButton>
                   <div className="flex flex-col">
                     <h2 className={`text-lg font-semibold ${theme.text}`}>
-                      {selectedConversation?.title || 'New Chat'}
+                      {getChatTitle()}
                     </h2>
                     <span className={`text-xs ${theme.textMuted} font-mono`}>
                       ID: {conversationId ? `${conversationId.slice(0, 4)}-${conversationId.slice(-4)}` : 'New'}
                     </span>
                   </div>
                 </div>
+                
                 <div className="flex items-center gap-2">
                   <ThemedButton
                     variant="ghost"
@@ -313,6 +346,7 @@ const App = () => {
                     variant="ghost"
                     size="icon"
                     theme={theme}
+                    onClick={handleExportChat}
                   >
                     <Download className={`h-5 w-5 ${theme.icon}`} />
                   </ThemedButton>

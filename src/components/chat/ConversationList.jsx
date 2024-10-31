@@ -5,7 +5,8 @@ import {
   MessageSquare, 
   Trash2, 
   Clock,
-  RefreshCw
+  RefreshCw,
+  Plus
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
@@ -16,6 +17,7 @@ import { api } from '../../services/api';
 export const ConversationList = ({ 
   onSelectConversation, 
   currentConversationId,
+  onNewChat,
   theme 
 }) => {
   const [conversations, setConversations] = useState([]);
@@ -29,12 +31,7 @@ export const ConversationList = ({
     try {
       const response = await api.getConversations();
       const convList = Array.isArray(response) ? response : response.conversations || [];
-      setConversations(convList);
-      
-      // If there are conversations and none is selected, select the first one
-      if (convList.length > 0 && !currentConversationId) {
-        onSelectConversation(convList[0]);
-      }
+      setConversations(convList.map(getConversationItem));
     } catch (err) {
       console.error('Error fetching conversations:', err);
       setError('Failed to load conversations');
@@ -51,12 +48,17 @@ export const ConversationList = ({
     try {
       await api.deleteConversation(conversationId);
       setDeleteDialog({ open: false, conversationId: null });
-      fetchConversations();
+      await fetchConversations();
     } catch (err) {
       console.error('Error deleting conversation:', err);
       setError('Failed to delete conversation');
     }
   };
+
+  const getConversationItem = (conversation) => ({
+    ...conversation,
+    total_messages: conversation.messages?.length || conversation.total_messages || 0
+  });
 
   const formatTimestamp = (timestamp) => {
     if (!timestamp) return '';
@@ -65,7 +67,7 @@ export const ConversationList = ({
 
   const getFirstQuestion = (conversation) => {
     if (!conversation.questions_asked || conversation.questions_asked.length === 0) {
-      return 'New Conversation';
+      return conversation.title || 'New Conversation';
     }
     const question = conversation.questions_asked[0];
     return question.length > 50 ? `${question.substring(0, 50)}...` : question;
@@ -83,66 +85,113 @@ export const ConversationList = ({
     return (
       <div className={`flex flex-col items-center justify-center h-full p-8 ${theme.text}`}>
         <p className="text-sm text-destructive mb-4">{error}</p>
-        <button
+        <Button
           onClick={fetchConversations}
-          className={`flex items-center gap-2 px-4 py-2 rounded-md ${theme.accent} text-white`}
+          className={`flex items-center gap-2 ${theme.accent} text-white`}
         >
           <RefreshCw className="h-4 w-4" />
           Try Again
-        </button>
+        </Button>
       </div>
-    );
-  }
-
-  if (!conversations.length) {
-    return (
-      <EmptyState
-        title="No Conversations"
-        description="Start a new chat to begin"
-        icon={MessageSquare}
-        theme={theme}
-      />
     );
   }
 
   return (
-    <ScrollArea className="h-full">
-      <div className="space-y-2 p-2">
-        {conversations.map((conversation) => (
-          <div
-            key={conversation.conversation_id}
-            className={`
-              group flex items-center p-3 rounded-lg border
-              transition-colors cursor-pointer
-              ${currentConversationId === conversation.conversation_id 
-                ? `${theme.accent} text-white` 
-                : `${theme.bgPrimary} ${theme.border} hover:${theme.bgHover}`
-              }
-            `}
-            onClick={() => onSelectConversation(conversation)}
-          >
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2">
-                <MessageSquare className={`h-4 w-4 ${currentConversationId === conversation.conversation_id ? 'text-white' : theme.icon}`} />
-                <p className={`text-sm font-medium truncate ${currentConversationId === conversation.conversation_id ? 'text-white' : theme.text}`}>
-                  {getFirstQuestion(conversation)}
-                </p>
+    <div className="flex flex-col h-full">
+      <Button
+        onClick={onNewChat}
+        className={`mb-4 w-full ${theme.accent} text-white flex items-center gap-2 justify-center`}
+      >
+        <Plus className="h-4 w-4" />
+        New Chat
+      </Button>
+
+      {!conversations.length ? (
+        <EmptyState
+          title="No Conversations"
+          description="Start a new chat to begin"
+          icon={MessageSquare}
+          theme={theme}
+        />
+      ) : (
+        <ScrollArea className="flex-1">
+          <div className="space-y-2 p-2">
+            {conversations.map((conversation) => (
+              <div
+                key={conversation.conversation_id}
+                className={`
+                  group flex items-center justify-between p-3 rounded-lg border
+                  transition-colors cursor-pointer
+                  ${currentConversationId === conversation.conversation_id 
+                    ? `${theme.accent} text-white` 
+                    : `${theme.bgPrimary} ${theme.border} hover:${theme.bgHover}`
+                  }
+                `}
+              >
+                <div 
+                  className="min-w-0 flex-1"
+                  onClick={() => onSelectConversation(conversation)}
+                >
+                  <div className="flex items-center gap-2">
+                    <MessageSquare 
+                      className={`h-4 w-4 ${
+                        currentConversationId === conversation.conversation_id 
+                          ? 'text-white' 
+                          : theme.icon
+                      }`} 
+                    />
+                    <p className={`text-sm font-medium truncate ${
+                      currentConversationId === conversation.conversation_id 
+                        ? 'text-white' 
+                        : theme.text
+                    }`}>
+                      {getFirstQuestion(conversation)}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className={`text-xs ${
+                      currentConversationId === conversation.conversation_id 
+                        ? 'text-white/80' 
+                        : theme.textMuted
+                    }`}>
+                      {conversation.total_messages} messages
+                    </span>
+                    {conversation.last_interaction && (
+                      <span className={`text-xs flex items-center gap-1 ${
+                        currentConversationId === conversation.conversation_id 
+                          ? 'text-white/80' 
+                          : theme.textMuted
+                      }`}>
+                        <Clock className="h-3 w-3" />
+                        {formatTimestamp(conversation.last_interaction)}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setDeleteDialog({ 
+                      open: true, 
+                      conversationId: conversation.conversation_id 
+                    });
+                  }}
+                  className={`
+                    flex-shrink-0 opacity-0 group-hover:opacity-100 
+                    text-destructive hover:text-destructive 
+                    hover:bg-destructive/10 transition-opacity
+                  `}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </div>
-              <div className="flex items-center gap-2 mt-1">
-                <span className={`text-xs ${currentConversationId === conversation.conversation_id ? 'text-white/80' : theme.textMuted}`}>
-                  {conversation.total_messages || 0} messages
-                </span>
-                {conversation.last_interaction && (
-                  <span className={`text-xs flex items-center gap-1 ${currentConversationId === conversation.conversation_id ? 'text-white/80' : theme.textMuted}`}>
-                    <Clock className="h-3 w-3" />
-                    {formatTimestamp(conversation.last_interaction)}
-                  </span>
-                )}
-              </div>
-            </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </ScrollArea>
+      )}
 
       <Dialog 
         open={deleteDialog.open} 
@@ -174,6 +223,6 @@ export const ConversationList = ({
           </div>
         </DialogContent>
       </Dialog>
-    </ScrollArea>
+    </div>
   );
 };
