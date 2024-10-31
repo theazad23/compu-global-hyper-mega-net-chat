@@ -18,6 +18,7 @@ import { MessageList } from './components/chat/MessageList';
 import { useChat } from './hooks/useChat';
 import { EmptyState } from './components/common/EmptyState';
 import { ThemedButton } from './components/ui/button';
+import { CollapsibleSidebar } from './components/layout/CollapsibleSidebar';
 
 // Theme preview component
 const ThemePreview = ({ theme, currentTheme, onClick }) => {
@@ -54,6 +55,7 @@ const App = () => {
   const [activeTab, setActiveTab] = useState('chat');
   const [selectedConversation, setSelectedConversation] = useState(null);
   const theme = themes[currentTheme].colors;
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const {
     messages,
@@ -142,8 +144,12 @@ const App = () => {
       </header>
 
       <div className="flex-1 flex overflow-hidden">
-        {/* Sidebar */}
-        <div className={`flex flex-col border-r ${theme.border} ${theme.bgPrimary} transition-all duration-300 w-80`}>
+        {/* Collapsible Sidebar */}
+        <CollapsibleSidebar
+          isOpen={isSidebarOpen}
+          onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+          theme={theme}
+        >
           <div className={`h-14 border-b ${theme.border} flex items-center justify-between px-4`}>
             <div className="flex gap-4">
               <ThemedButton
@@ -177,7 +183,7 @@ const App = () => {
               <DocumentList theme={theme} />
             )}
           </div>
-        </div>
+        </CollapsibleSidebar>
 
         {/* Main Content */}
         <div className={`flex-1 flex flex-col ${theme.bgPrimary} overflow-hidden`}>
