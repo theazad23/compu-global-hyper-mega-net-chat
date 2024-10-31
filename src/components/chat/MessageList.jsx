@@ -3,7 +3,7 @@ import { Message } from './Message';
 import { ScrollArea } from '../ui/scroll-area';
 import { Loader2 } from 'lucide-react';
 
-export const MessageList = ({ messages, format, onViewSources, isLoading }) => {
+export const MessageList = ({ messages, format, onViewSources, isLoading, theme }) => {
   const scrollContainerRef = useRef(null);
 
   useEffect(() => {
@@ -24,14 +24,15 @@ export const MessageList = ({ messages, format, onViewSources, isLoading }) => {
             message={message}
             format={format}
             onViewSources={onViewSources}
+            theme={theme}
           />
         ))}
         {isLoading && (
           <div className="flex justify-start w-full">
-            <div className="max-w-[80%] rounded-lg p-4 bg-secondary">
+            <div className={`max-w-[80%] rounded-lg p-4 ${theme.messageBot}`}>
               <div className="flex items-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                <span className="text-sm text-muted-foreground">
+                <span className={`text-sm ${theme.textMuted}`}>
                   Assistant is thinking...
                 </span>
               </div>

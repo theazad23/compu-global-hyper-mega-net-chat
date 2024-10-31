@@ -184,7 +184,7 @@ const App = () => {
   const [isThemeOpen, setIsThemeOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('chat');
-  const [currentConversation, setCurrentConversation] = useState(null);
+  const [selectedConversation, setSelectedConversation] = useState(null);
   const theme = themes[currentTheme].colors;
 
   const {
@@ -193,6 +193,7 @@ const App = () => {
     error,
     sendMessage,
     conversationId,
+    loadConversation,
     createNewConversation
   } = useChat();
 
@@ -202,9 +203,17 @@ const App = () => {
     contextMode: 'flexible'
   });
 
-  const handleNewChat = () => {
+  const handleSelectConversation = (conversation) => {
+    setSelectedConversation(conversation);
+    if (conversation?.conversation_id) {
+      loadConversation(conversation.conversation_id);
+    }
+  };
+
+  const handleNewChat = async () => {
     if (window.confirm('Start a new chat? This will clear the current conversation.')) {
-      createNewConversation();
+      setSelectedConversation(null);
+      await createNewConversation();
     }
   };
 
@@ -214,7 +223,6 @@ const App = () => {
 
   return (
     <div className={`h-screen flex flex-col ${theme.bgSecondary} transition-colors duration-200`}>
-      {/* Top Navigation Bar */}
       <header className={`h-16 border-b ${theme.border} ${theme.bgPrimary} flex items-center justify-between px-6 flex-shrink-0`}>
         <div className="flex items-center gap-2">
           <MessageSquare className={`h-6 w-6 ${theme.accent} text-white rounded-lg p-1`} />
@@ -234,14 +242,8 @@ const App = () => {
         </div>
       </header>
 
-      {/* Main Content Area */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Sidebar */}
-        <div className={`
-          flex flex-col border-r ${theme.border} ${theme.bgPrimary}
-          transition-all duration-300 w-80
-        `}>
-          {/* Sidebar Tabs */}
+        <div className={`flex flex-col border-r ${theme.border} ${theme.bgPrimary} transition-all duration-300 w-80`}>
           <div className={`h-14 border-b ${theme.border} flex items-center justify-between px-4`}>
             <div className="flex gap-4">
               <ThemedButton
@@ -263,12 +265,11 @@ const App = () => {
             </div>
           </div>
 
-          {/* Sidebar Content */}
           <div className={`flex-1 overflow-hidden ${theme.bgPrimary} p-4`}>
             {activeTab === 'chat' ? (
               <ConversationList
-                onSelectConversation={setCurrentConversation}
-                currentConversationId={currentConversation?.conversation_id}
+                onSelectConversation={handleSelectConversation}
+                currentConversationId={selectedConversation?.conversation_id}
                 theme={theme}
               />
             ) : (
@@ -277,10 +278,8 @@ const App = () => {
           </div>
         </div>
 
-        {/* Chat Area */}
         <div className={`flex-1 flex flex-col ${theme.bgPrimary} overflow-hidden`}>
           <div className={`flex flex-col h-full ${theme.bgPrimary} rounded-lg shadow-sm border ${theme.border}`}>
-            {/* Chat Header */}
             <div className={`border-b ${theme.border} ${theme.bgPrimary}`}>
               <div className="flex items-center justify-between p-4">
                 <div className="flex items-center gap-4">
@@ -294,7 +293,7 @@ const App = () => {
                   </ThemedButton>
                   <div className="flex flex-col">
                     <h2 className={`text-lg font-semibold ${theme.text}`}>
-                      {currentConversation?.title || 'New Chat'}
+                      {selectedConversation?.title || 'New Chat'}
                     </h2>
                     <span className={`text-xs ${theme.textMuted} font-mono`}>
                       ID: {conversationId ? `${conversationId.slice(0, 4)}-${conversationId.slice(-4)}` : 'New'}
@@ -329,14 +328,13 @@ const App = () => {
               </div>
             </div>
 
-            {/* Messages Area */}
             <div className={`flex-1 overflow-auto ${theme.bgPrimary} relative`}>
               {messages.length === 0 ? (
                 <EmptyState
                   title="Start a Conversation"
                   description="Begin by typing a message below"
                   icon={MessageSquare}
-                  className={`${theme.text} ${theme.textMuted}`}
+                  theme={theme}
                 />
               ) : (
                 <MessageList
@@ -348,7 +346,6 @@ const App = () => {
               )}
             </div>
 
-            {/* Input Area */}
             <div className={`border-t ${theme.border} ${theme.bgPrimary} p-4`}>
               <MessageInput
                 onSend={handleSendMessage}
@@ -360,7 +357,6 @@ const App = () => {
         </div>
       </div>
 
-      {/* Settings Dialog */}
       <ChatSettings
         open={isSettingsOpen}
         onOpenChange={setIsSettingsOpen}
@@ -369,7 +365,6 @@ const App = () => {
         theme={theme}
       />
 
-      {/* Theme Selection Dialog */}
       <Dialog open={isThemeOpen} onOpenChange={setIsThemeOpen}>
         <DialogContent className={`${theme.bgPrimary} ${theme.text} border ${theme.border}`}>
           <DialogHeader>

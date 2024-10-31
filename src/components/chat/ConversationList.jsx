@@ -5,7 +5,6 @@ import {
   MessageSquare, 
   Trash2, 
   Clock,
-  Info,
   RefreshCw
 } from 'lucide-react';
 import { format } from 'date-fns';
@@ -29,7 +28,13 @@ export const ConversationList = ({
     setError(null);
     try {
       const response = await api.getConversations();
-      setConversations(Array.isArray(response) ? response : response.conversations || []);
+      const convList = Array.isArray(response) ? response : response.conversations || [];
+      setConversations(convList);
+      
+      // If there are conversations and none is selected, select the first one
+      if (convList.length > 0 && !currentConversationId) {
+        onSelectConversation(convList[0]);
+      }
     } catch (err) {
       console.error('Error fetching conversations:', err);
       setError('Failed to load conversations');
@@ -95,7 +100,7 @@ export const ConversationList = ({
         title="No Conversations"
         description="Start a new chat to begin"
         icon={MessageSquare}
-        className={`${theme.text} ${theme.textMuted}`}
+        theme={theme}
       />
     );
   }
@@ -135,23 +140,10 @@ export const ConversationList = ({
                 )}
               </div>
             </div>
-            
-            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button
-                className={`p-2 rounded-md ${currentConversationId === conversation.conversation_id ? 'hover:bg-white/20' : theme.buttonHover}`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setDeleteDialog({ open: true, conversationId: conversation.conversation_id });
-                }}
-              >
-                <Trash2 className={`h-4 w-4 ${currentConversationId === conversation.conversation_id ? 'text-white' : theme.icon}`} />
-              </button>
-            </div>
           </div>
         ))}
       </div>
 
-      {/* Delete Dialog */}
       <Dialog 
         open={deleteDialog.open} 
         onOpenChange={(open) => setDeleteDialog({ open, conversationId: null })}
@@ -165,18 +157,19 @@ export const ConversationList = ({
               Are you sure you want to delete this conversation? This action cannot be undone.
             </p>
             <div className="flex justify-end gap-2">
-              <button
+              <Button
+                variant="outline"
                 onClick={() => setDeleteDialog({ open: false, conversationId: null })}
-                className={`px-4 py-2 rounded-md border ${theme.border} ${theme.text} hover:${theme.bgHover}`}
+                className={`${theme.border} ${theme.text}`}
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="destructive"
                 onClick={() => handleDelete(deleteDialog.conversationId)}
-                className="px-4 py-2 rounded-md bg-red-500 text-white hover:bg-red-600"
               >
                 Delete
-              </button>
+              </Button>
             </div>
           </div>
         </DialogContent>

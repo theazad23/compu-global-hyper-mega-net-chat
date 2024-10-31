@@ -23,6 +23,8 @@ export const useChat = () => {
   }, []);
 
   const loadConversation = useCallback(async (id) => {
+    if (!id) return;
+    
     setIsLoading(true);
     setError(null);
     try {
@@ -47,7 +49,6 @@ export const useChat = () => {
     setError(null);
 
     try {
-      // Add user message immediately
       const userMessage = {
         id: Date.now(),
         role: 'user',
@@ -56,7 +57,6 @@ export const useChat = () => {
       };
       setMessages(prev => [...prev, userMessage]);
 
-      // Send to API
       const response = await api.continueConversation(conversationId, {
         question: message,
         strategy: settings.strategy,
@@ -64,7 +64,6 @@ export const useChat = () => {
         context_mode: settings.contextMode
       });
 
-      // Add assistant response
       const assistantMessage = {
         id: Date.now() + 1,
         role: 'assistant',
@@ -81,13 +80,6 @@ export const useChat = () => {
       setIsLoading(false);
     }
   }, [conversationId]);
-
-  // Initialize conversation if none exists
-  useEffect(() => {
-    if (!conversationId) {
-      createNewConversation();
-    }
-  }, [conversationId, createNewConversation]);
 
   return {
     messages,

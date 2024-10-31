@@ -7,7 +7,8 @@ export const ChatSettings = ({
   open, 
   onOpenChange, 
   settings, 
-  onSettingsChange 
+  onSettingsChange,
+  theme 
 }) => {
   const handleSettingChange = (key, value) => {
     onSettingsChange(prev => ({
@@ -18,22 +19,22 @@ export const ChatSettings = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className={`${theme.bgPrimary} border ${theme.border}`}>
         <DialogHeader>
-          <DialogTitle>Chat Settings</DialogTitle>
+          <DialogTitle className={theme.text}>Chat Settings</DialogTitle>
         </DialogHeader>
         
         <div className="grid gap-4 py-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium">Prompt Strategy</label>
+            <label className={`text-sm font-medium ${theme.text}`}>Prompt Strategy</label>
             <Select
               value={settings.strategy}
               onValueChange={(value) => handleSettingChange('strategy', value)}
             >
-              <SelectTrigger>
+              <SelectTrigger className={`${theme.bgPrimary} ${theme.border} ${theme.text}`}>
                 <SelectValue placeholder="Select strategy" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className={`${theme.bgPrimary} border ${theme.border}`}>
                 <SelectItem value={PROMPT_STRATEGIES.STANDARD}>Standard</SelectItem>
                 <SelectItem value={PROMPT_STRATEGIES.ACADEMIC}>Academic</SelectItem>
                 <SelectItem value={PROMPT_STRATEGIES.CONCISE}>Concise</SelectItem>
@@ -44,15 +45,15 @@ export const ChatSettings = ({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Response Format</label>
+            <label className={`text-sm font-medium ${theme.text}`}>Response Format</label>
             <Select
               value={settings.responseFormat}
               onValueChange={(value) => handleSettingChange('responseFormat', value)}
             >
-              <SelectTrigger>
+              <SelectTrigger className={`${theme.bgPrimary} ${theme.border} ${theme.text}`}>
                 <SelectValue placeholder="Select format" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className={`${theme.bgPrimary} border ${theme.border}`}>
                 <SelectItem value={RESPONSE_FORMATS.DEFAULT}>Default</SelectItem>
                 <SelectItem value={RESPONSE_FORMATS.JSON}>JSON</SelectItem>
                 <SelectItem value={RESPONSE_FORMATS.MARKDOWN}>Markdown</SelectItem>
@@ -62,15 +63,15 @@ export const ChatSettings = ({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Context Mode</label>
+            <label className={`text-sm font-medium ${theme.text}`}>Context Mode</label>
             <Select
               value={settings.contextMode}
               onValueChange={(value) => handleSettingChange('contextMode', value)}
             >
-              <SelectTrigger>
+              <SelectTrigger className={`${theme.bgPrimary} ${theme.border} ${theme.text}`}>
                 <SelectValue placeholder="Select mode" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className={`${theme.bgPrimary} border ${theme.border}`}>
                 <SelectItem value={CONTEXT_MODES.STRICT}>Strict</SelectItem>
                 <SelectItem value={CONTEXT_MODES.FLEXIBLE}>Flexible</SelectItem>
               </SelectContent>
