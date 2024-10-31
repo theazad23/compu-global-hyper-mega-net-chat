@@ -7,7 +7,7 @@ import { Trash2, FileText, Upload } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { ErrorMessage } from '../common/ErrorMessage';
 import { EmptyState } from '../common/EmptyState';
-import { DocumentSkeleton } from '../common/SkeletonLoader';
+import { DocumentSkeleton } from '../common/SkeletonLoader.jsx';
 
 export const DocumentList = ({ theme }) => {
   const { 

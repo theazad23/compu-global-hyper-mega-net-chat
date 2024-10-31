@@ -1,30 +1,12 @@
 import React from 'react';
 import { cn } from '../../lib/utils';
 
-export const Skeleton = ({ className, ...props }) => {
+const Skeleton = ({ className, ...props }) => {
   return (
     <div
       className={cn("animate-pulse rounded-md bg-muted", className)}
       {...props}
     />
-  );
-};
-
-export const MessageSkeleton = () => {
-  return (
-    <div className="flex flex-col space-y-4 p-4">
-      {[...Array(3)].map((_, i) => (
-        <div
-          key={i}
-          className={cn(
-            "flex w-full max-w-[80%]",
-            i % 2 === 0 ? "justify-end ml-auto" : "justify-start"
-          )}
-        >
-          <Skeleton className="h-16 w-full" />
-        </div>
-      ))}
-    </div>
   );
 };
 
