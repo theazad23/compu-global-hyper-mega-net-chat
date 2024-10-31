@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useDocuments } from '../../hooks/useDocuments';
-import { Button } from '../ui/button';
+import { ThemedButton } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
@@ -13,10 +13,8 @@ import {
   DialogTrigger,
 } from '../ui/dialog';
 import { LoadingSpinner } from '../common/LoadingSpinner';
-import { LoadingOverlay } from '../common/LoadingOverlay';
-import { ErrorMessage } from '../common/ErrorMessage';
 
-export const DocumentUpload = ({ id }) => {
+export const DocumentUpload = ({ id, theme }) => {
   const { uploadDocument, isLoading } = useDocuments();
   const [open, setOpen] = useState(false);
   const [file, setFile] = useState(null);
@@ -51,69 +49,78 @@ export const DocumentUpload = ({ id }) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button id={id} variant="outline" className="gap-2">
+        <ThemedButton 
+          id={id} 
+          variant="outline" 
+          theme={theme}
+          className="gap-2"
+        >
           <Upload className="h-4 w-4" />
           Upload Document
-        </Button>
+        </ThemedButton>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className={`${theme.bgPrimary} ${theme.border}`}>
         <DialogHeader>
-          <DialogTitle>Upload Document</DialogTitle>
+          <DialogTitle className={theme.text}>Upload Document</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleUpload} className="space-y-4">
           {error && (
-            <ErrorMessage 
-              message={error}
-              onRetry={() => setError(null)}
-            />
+            <div className="p-3 rounded-md bg-red-500/10 text-red-500 text-sm">
+              {error}
+            </div>
           )}
           
           <div className="space-y-2">
-            <Label htmlFor="file">File</Label>
+            <Label htmlFor="file" className={theme.text}>File</Label>
             <Input
               id="file"
               type="file"
               onChange={(e) => setFile(e.target.files[0])}
               disabled={isLoading}
+              className={`${theme.bgPrimary} ${theme.border} ${theme.text}`}
               required
             />
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="title">Title</Label>
+            <Label htmlFor="title" className={theme.text}>Title</Label>
             <Input
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Document title"
               disabled={isLoading}
+              className={`${theme.bgPrimary} ${theme.border} ${theme.text}`}
               required
             />
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description" className={theme.text}>Description</Label>
             <Textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Document description (optional)"
               disabled={isLoading}
+              className={`${theme.bgPrimary} ${theme.border} ${theme.text}`}
             />
           </div>
           
           <div className="flex justify-end gap-2">
-            <Button
+            <ThemedButton
               type="button"
               variant="outline"
               onClick={() => setOpen(false)}
               disabled={isLoading}
+              theme={theme}
             >
               Cancel
-            </Button>
-            <Button
+            </ThemedButton>
+            <ThemedButton
               type="submit"
               disabled={isLoading || !file || !title}
+              theme={theme}
               className="min-w-[100px]"
             >
               {isLoading ? (
@@ -124,12 +131,8 @@ export const DocumentUpload = ({ id }) => {
               ) : (
                 'Upload'
               )}
-            </Button>
+            </ThemedButton>
           </div>
-
-          {isLoading && (
-            <LoadingOverlay message="Uploading document..." />
-          )}
         </form>
       </DialogContent>
     </Dialog>
