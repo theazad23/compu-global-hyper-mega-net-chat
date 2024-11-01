@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { Button } from '../ui/button';
-import { Input } from '../ui/input';
 import { Send } from 'lucide-react';
+import EnhancedTextarea from '../editor/EnhancedTextarea';
 
 export const MessageInput = ({ onSend, disabled, theme }) => {
   const [message, setMessage] = useState('');
 
   const handleSubmit = (e) => {
-    e.preventDefault();
+    e?.preventDefault();
     if (message.trim() && !disabled) {
       onSend(message);
       setMessage('');
@@ -15,18 +15,14 @@ export const MessageInput = ({ onSend, disabled, theme }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex gap-2">
-      <input
+    <form onSubmit={handleSubmit} className="flex flex-col gap-2">
+      <EnhancedTextarea
         value={message}
-        onChange={(e) => setMessage(e.target.value)}
-        placeholder="Type your message..."
+        onChange={setMessage}
         disabled={disabled}
-        className={`
-          flex-1 rounded-md border p-2 
-          ${theme.border} ${theme.bgPrimary} ${theme.text}
-          focus:outline-none focus:ring-2 focus:ring-blue-500
-          disabled:opacity-50 disabled:cursor-not-allowed
-        `}
+        theme={theme}
+        onSubmit={handleSubmit}
+        placeholder="Type your message..."
       />
       <Button 
         type="submit" 
