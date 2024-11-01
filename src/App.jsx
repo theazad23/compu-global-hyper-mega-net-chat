@@ -6,7 +6,8 @@ import {
   Settings,
   Download,
   RefreshCcw,
-  History
+  History,
+  MessagesSquare
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';  // Add this import
@@ -183,7 +184,7 @@ const App = () => {
     <div className={`h-screen flex flex-col ${theme.bgSecondary} transition-colors duration-200`}>
       <header className={`h-16 border-b ${theme.border} ${theme.bgPrimary} flex items-center justify-between px-6 flex-shrink-0`}>
         <div className="flex items-center gap-2">
-          <MessageSquare className={`h-6 w-6 ${theme.accent} text-white rounded-lg p-1`} />
+          <MessagesSquare className={`h-6 w-6 ${theme.accent} text-white rounded-lg p-1`} />
           <h1 className={`text-xl font-semibold ${theme.text}`}>Compu-Global-Hyper-Mega-Net-Chat</h1>
         </div>
         <div className="flex items-center gap-3">
