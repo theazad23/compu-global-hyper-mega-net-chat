@@ -210,6 +210,163 @@ export const themes = {
         messageBot: 'bg-amber-700 text-amber-50',
         icon: 'text-amber-300'
       }
+    },
+    // Holiday Themes
+    christmas: {
+      name: 'Christmas',
+      preview: {
+        primary: '#D42426',
+        background: '#0C3823',
+        text: '#ffffff',
+        accent: '#165B33'
+      },
+      colors: {
+        bgPrimary: 'bg-green-900',
+        bgSecondary: 'bg-green-800',
+        bgAccent: 'bg-red-900/50',
+        bgHover: 'hover:bg-green-800/70',
+        text: 'text-green-50',
+        textSecondary: 'text-red-100',
+        textMuted: 'text-green-200',
+        border: 'border-green-700',
+        accent: 'bg-red-600',
+        accentHover: 'hover:bg-red-700',
+        buttonHover: 'hover:bg-green-800/50',
+        highlight: 'bg-red-900/30',
+        messageUser: 'bg-red-600 text-white',
+        messageBot: 'bg-green-800 text-green-50',
+        icon: 'text-red-300'
+      }
+    },
+    halloween: {
+      name: 'Halloween',
+      preview: {
+        primary: '#FF6600',
+        background: '#1A1A1A',
+        text: '#ffffff',
+        accent: '#663399'
+      },
+      colors: {
+        bgPrimary: 'bg-gray-900',
+        bgSecondary: 'bg-gray-800',
+        bgAccent: 'bg-orange-900/50',
+        bgHover: 'hover:bg-purple-900/30',
+        text: 'text-orange-50',
+        textSecondary: 'text-purple-200',
+        textMuted: 'text-orange-200',
+        border: 'border-purple-900',
+        accent: 'bg-orange-500',
+        accentHover: 'hover:bg-orange-600',
+        buttonHover: 'hover:bg-purple-900/50',
+        highlight: 'bg-orange-900/30',
+        messageUser: 'bg-orange-500 text-white',
+        messageBot: 'bg-purple-900 text-purple-50',
+        icon: 'text-orange-300'
+      }
+    },
+    valentines: {
+      name: 'Valentine\'s Day',
+      preview: {
+        primary: '#FF69B4',
+        background: '#FFF0F5',
+        text: '#4A0404',
+        accent: '#FFB6C1'
+      },
+      colors: {
+        bgPrimary: 'bg-pink-50',
+        bgSecondary: 'bg-pink-100',
+        bgAccent: 'bg-red-100',
+        bgHover: 'hover:bg-pink-200',
+        text: 'text-red-900',
+        textSecondary: 'text-red-800',
+        textMuted: 'text-red-600',
+        border: 'border-pink-200',
+        accent: 'bg-pink-500',
+        accentHover: 'hover:bg-pink-600',
+        buttonHover: 'hover:bg-pink-200',
+        highlight: 'bg-red-100',
+        messageUser: 'bg-pink-500 text-white',
+        messageBot: 'bg-red-50 text-red-900',
+        icon: 'text-pink-400'
+      }
+    },
+    stPatricks: {
+      name: 'St. Patrick\'s Day',
+      preview: {
+        primary: '#02C94B',
+        background: '#004B1C',
+        text: '#ffffff',
+        accent: '#007A29'
+      },
+      colors: {
+        bgPrimary: 'bg-green-900',
+        bgSecondary: 'bg-green-800',
+        bgAccent: 'bg-emerald-800/50',
+        bgHover: 'hover:bg-emerald-700/30',
+        text: 'text-green-50',
+        textSecondary: 'text-emerald-200',
+        textMuted: 'text-green-300',
+        border: 'border-emerald-700',
+        accent: 'bg-emerald-500',
+        accentHover: 'hover:bg-emerald-600',
+        buttonHover: 'hover:bg-green-800/50',
+        highlight: 'bg-emerald-800/30',
+        messageUser: 'bg-emerald-500 text-white',
+        messageBot: 'bg-green-800 text-green-50',
+        icon: 'text-emerald-300'
+      }
+    },
+    easter: {
+      name: 'Easter',
+      preview: {
+        primary: '#FFB7C5',
+        background: '#E6F3FF',
+        text: '#2C1810',
+        accent: '#87CEEB'
+      },
+      colors: {
+        bgPrimary: 'bg-blue-50',
+        bgSecondary: 'bg-purple-50',
+        bgAccent: 'bg-pink-100',
+        bgHover: 'hover:bg-blue-100',
+        text: 'text-purple-900',
+        textSecondary: 'text-purple-800',
+        textMuted: 'text-purple-600',
+        border: 'border-purple-200',
+        accent: 'bg-pink-400',
+        accentHover: 'hover:bg-pink-500',
+        buttonHover: 'hover:bg-purple-100',
+        highlight: 'bg-blue-100',
+        messageUser: 'bg-pink-400 text-white',
+        messageBot: 'bg-purple-50 text-purple-900',
+        icon: 'text-purple-400'
+      }
+    },
+    thanksgiving: {
+      name: 'Thanksgiving',
+      preview: {
+        primary: '#B7410E',
+        background: '#4A2511',
+        text: '#ffffff',
+        accent: '#843C0C'
+      },
+      colors: {
+        bgPrimary: 'bg-orange-900',
+        bgSecondary: 'bg-orange-800',
+        bgAccent: 'bg-amber-900/50',
+        bgHover: 'hover:bg-amber-800/30',
+        text: 'text-orange-50',
+        textSecondary: 'text-amber-200',
+        textMuted: 'text-orange-200',
+        border: 'border-amber-700',
+        accent: 'bg-amber-600',
+        accentHover: 'hover:bg-amber-700',
+        buttonHover: 'hover:bg-orange-800/50',
+        highlight: 'bg-amber-900/30',
+        messageUser: 'bg-amber-600 text-white',
+        messageBot: 'bg-orange-800 text-orange-50',
+        icon: 'text-amber-300'
+      }
     }
   };
   
