@@ -55,10 +55,35 @@ export const ConversationList = ({
     }
   };
 
-  const getConversationItem = (conversation) => ({
-    ...conversation,
-    total_messages: conversation.messages?.length || conversation.total_messages || 0
-  });
+  const getConversationItem = (conversation) => {
+    // Calculate total messages by counting questions and responses
+    const questionsCount = Array.isArray(conversation.questions_asked) 
+      ? conversation.questions_asked.length 
+      : 0;
+    
+    const responsesCount = Array.isArray(conversation.responses) 
+      ? conversation.responses.length 
+      : 0;
+
+    // If we have messages array, use its length
+    const messagesCount = Array.isArray(conversation.messages) 
+      ? conversation.messages.length 
+      : 0;
+
+    // Use the most reliable count available
+    const total_messages = messagesCount > 0 
+      ? messagesCount 
+      : (questionsCount + responsesCount) || conversation.total_messages || 0;
+
+    return {
+      ...conversation,
+      total_messages,
+      // Ensure questions_asked is always an array
+      questions_asked: Array.isArray(conversation.questions_asked) 
+        ? conversation.questions_asked 
+        : []
+    };
+  };
 
   const formatTimestamp = (timestamp) => {
     if (!timestamp) return '';
