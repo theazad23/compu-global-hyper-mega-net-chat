@@ -127,7 +127,7 @@ const App = () => {
       <header className={`h-16 border-b ${theme.border} ${theme.bgPrimary} flex items-center justify-between px-6 flex-shrink-0`}>
         <div className="flex items-center gap-2">
           <MessageSquare className={`h-6 w-6 ${theme.accent} text-white rounded-lg p-1`} />
-          <h1 className={`text-xl font-semibold ${theme.text}`}>AI Chat Assistant</h1>
+          <h1 className={`text-xl font-semibold ${theme.text}`}>Compu Global Hyper Mega Net Chat</h1>
         </div>
         <div className="flex items-center gap-3">
           <ThemedButton 
