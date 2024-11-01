@@ -127,7 +127,7 @@ const App = () => {
 
   const [chatSettings, setChatSettings] = useState({
     strategy: 'standard',
-    responseFormat: 'default',
+    responseFormat: 'markdown',
     contextMode: 'flexible'
   });
 
