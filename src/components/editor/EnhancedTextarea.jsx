@@ -14,24 +14,18 @@ const EnhancedTextarea = ({
   const [copied, setCopied] = useState(false);
   
   const handleKeyDown = (e) => {
-    // Handle tab key for indentation
     if (e.key === 'Tab') {
       e.preventDefault();
       const start = e.target.selectionStart;
       const end = e.target.selectionEnd;
-      const spaces = '  '; // 2 spaces for indentation
-      
-      // Update the text value with indentation
+      const spaces = '  ';
       const newValue = value.substring(0, start) + spaces + value.substring(end);
       onChange(newValue);
-      
-      // Move cursor after indentation
       setTimeout(() => {
         e.target.selectionStart = e.target.selectionEnd = start + 2;
       }, 0);
     }
     
-    // Handle enter with shift for new line, enter alone for submit
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       if (value.trim()) {
@@ -41,22 +35,58 @@ const EnhancedTextarea = ({
   };
 
   const handleCopy = async (e) => {
-    e.preventDefault(); // Prevent form submission
-    e.stopPropagation(); // Prevent event bubbling
+    e.preventDefault();
+    e.stopPropagation();
     await navigator.clipboard.writeText(value);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   return (
-    <div className="relative">
-      <div className="absolute right-2 top-2 flex gap-2">
+    <div className="relative space-y-2">
+      {/* Main textarea container */}
+      <div className={cn(
+        "relative group rounded-xl transition-all duration-200",
+        theme?.bgSecondary,
+        theme?.border,
+        "focus-within:ring-2 focus-within:ring-opacity-50",
+        "focus-within:ring-blue-500/20",
+      )}>
+        <textarea
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder}
+          disabled={disabled}
+          className={cn(
+            "w-full min-h-[100px] p-4 rounded-xl",
+            "font-mono text-sm resize-none",
+            "bg-transparent border-0",
+            "focus:outline-none focus:ring-0",
+            "placeholder:text-gray-400 dark:placeholder:text-gray-600",
+            "scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-700",
+            theme?.text,
+            className
+          )}
+          style={{
+            lineHeight: '1.5',
+            tabSize: 2,
+          }}
+        />
+
+        {/* Copy button - only show when there's content */}
         {value && (
           <button
             onClick={handleCopy}
-            type="button" // Explicitly set button type to prevent form submission
+            type="button"
             className={cn(
-              "p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors",
+              "absolute top-3 right-3",
+              "p-1.5 rounded-lg",
+              "opacity-0 group-hover:opacity-100",
+              "transition-all duration-200",
+              theme?.bgPrimary,
+              theme?.border,
+              `hover:${theme?.bgHover}`,
               theme?.textMuted
             )}
             title={copied ? "Copied!" : "Copy to clipboard"}
@@ -69,40 +99,37 @@ const EnhancedTextarea = ({
           </button>
         )}
       </div>
-      
-      <textarea
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        onKeyDown={handleKeyDown}
-        placeholder={placeholder}
-        disabled={disabled}
-        className={cn(
-          "w-full min-h-[100px] p-3 rounded-lg font-mono text-sm resize-none",
-          "border focus:outline-none focus:ring-2 focus:ring-blue-500",
-          "placeholder:text-gray-400 dark:placeholder:text-gray-600",
-          "scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-700",
-          "pr-20", // Space for the copy button
-          theme?.bgPrimary,
-          theme?.border,
-          theme?.text,
-          className
-        )}
-        style={{
-          lineHeight: '1.5',
-          tabSize: 2,
-        }}
-      />
-      
+
+      {/* Keyboard shortcuts - more subtle styling */}
       <div className={cn(
-        "text-xs mt-2",
+        "flex items-center gap-2 px-1",
+        "text-xs",
         theme?.textMuted
       )}>
-        <kbd className="px-2 py-1 rounded bg-gray-100 dark:bg-gray-800 mr-1">Shift + Enter</kbd>
-        for new line,
-        <kbd className="px-2 py-1 rounded bg-gray-100 dark:bg-gray-800 mx-1">Enter</kbd>
-        to send,
-        <kbd className="px-2 py-1 rounded bg-gray-100 dark:bg-gray-800 mx-1">Tab</kbd>
-        to indent
+        <div className="flex items-center gap-1">
+          <kbd className={cn(
+            "px-1.5 py-0.5 rounded-md text-[10px]",
+            theme?.bgSecondary,
+            theme?.border
+          )}>Shift + Enter</kbd>
+          <span>new line</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <kbd className={cn(
+            "px-1.5 py-0.5 rounded-md text-[10px]",
+            theme?.bgSecondary,
+            theme?.border
+          )}>Enter</kbd>
+          <span>send</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <kbd className={cn(
+            "px-1.5 py-0.5 rounded-md text-[10px]",
+            theme?.bgSecondary,
+            theme?.border
+          )}>Tab</kbd>
+          <span>indent</span>
+        </div>
       </div>
     </div>
   );

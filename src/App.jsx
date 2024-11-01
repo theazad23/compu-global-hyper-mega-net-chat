@@ -9,7 +9,8 @@ import {
   History
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { themes } from './config/themes';  // Import themes from the new file
+import { ScrollArea } from '@/components/ui/scroll-area';  // Add this import
+import { themes } from './config/themes';
 import { DocumentList } from './components/documents/DocumentList';
 import { ConversationList } from './components/chat/ConversationList';
 import { ChatSettings } from './components/chat/ChatSettings';
@@ -20,6 +21,30 @@ import { EmptyState } from './components/common/EmptyState';
 import { ThemedButton } from './components/ui/button';
 import { CollapsibleSidebar } from './components/layout/CollapsibleSidebar';
 
+// Theme category definitions
+const themeCategories = {
+  base: {
+    label: "Base Themes",
+    themes: ["light", "dark"]
+  },
+  nature: {
+    label: "Nature",
+    themes: ["forest", "ocean", "sunset", "amber"]
+  },
+  colors: {
+    label: "Colors",
+    themes: ["purple", "rose"]
+  },
+  holidays: {
+    label: "Holidays",
+    themes: ["christmas", "halloween", "valentines", "stPatricks", "easter", "thanksgiving"]
+  },
+  shows: {
+    label: "TV Shows & Anime",
+    themes: ["simpsons", "dragonBallZ", "naruto", "akatsuki"]
+  }
+};
+
 // Theme preview component
 const ThemePreview = ({ theme, currentTheme, onClick }) => {
   const colors = themes[theme].preview;
@@ -28,25 +53,57 @@ const ThemePreview = ({ theme, currentTheme, onClick }) => {
     <button
       onClick={() => onClick(theme)}
       className={`
-        p-4 rounded-lg border transition-all duration-200 w-full
+        p-3 rounded-lg border transition-all duration-200 w-full
         ${currentTheme === theme ? 'ring-2 ring-blue-500 border-blue-500' : 'border-gray-200 dark:border-gray-700'}
+        hover:scale-105 transform transition-transform
       `}
       style={{ backgroundColor: colors.background }}
     >
       <div className="text-left" style={{ color: colors.text }}>
-        <div className="font-medium mb-3">{themes[theme].name}</div>
-        <div className="flex gap-2">
-          <div className="w-6 h-6 rounded-full" style={{ backgroundColor: colors.primary }} />
-          <div className="w-6 h-6 rounded-full" style={{ backgroundColor: colors.accent }} />
-          <div className="w-6 h-6 rounded-full" style={{ backgroundColor: colors.text }} />
-        </div>
-        <div className="mt-3 p-2 rounded" style={{ backgroundColor: colors.accent }}>
-          <div className="text-xs" style={{ color: colors.text }}>Preview Text</div>
+        <div className="font-medium mb-2 text-sm">{themes[theme].name}</div>
+        <div className="flex gap-1.5">
+          <div className="w-4 h-4 rounded-full" style={{ backgroundColor: colors.primary }} />
+          <div className="w-4 h-4 rounded-full" style={{ backgroundColor: colors.accent }} />
         </div>
       </div>
     </button>
   );
 };
+
+const ThemeDialog = ({ open, onOpenChange, currentTheme, onThemeChange, theme }) => (
+  <Dialog open={open} onOpenChange={onOpenChange}>
+    <DialogContent className={`${theme.bgPrimary} ${theme.text} border ${theme.border} w-full max-w-3xl max-h-[80vh]`}>
+      <DialogHeader className="px-2">
+        <DialogTitle className={`flex items-center gap-2 ${theme.text}`}>
+          <Palette className="h-5 w-5" />
+          Appearance
+        </DialogTitle>
+      </DialogHeader>
+      
+      <ScrollArea className="max-h-[60vh]">
+        <div className="space-y-6 px-2 pb-4">
+          {Object.entries(themeCategories).map(([categoryKey, category]) => (
+            <div key={categoryKey} className="space-y-3">
+              <h3 className={`text-sm font-medium ${theme.textSecondary}`}>
+                {category.label}
+              </h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 pr-4">
+                {category.themes.map((themeKey) => (
+                  <ThemePreview
+                    key={themeKey}
+                    theme={themeKey}
+                    currentTheme={currentTheme}
+                    onClick={onThemeChange}
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </ScrollArea>
+    </DialogContent>
+  </Dialog>
+);
 
 const App = () => {
   const [currentTheme, setCurrentTheme] = useState('light');
@@ -277,29 +334,13 @@ const App = () => {
       />
 
       {/* Theme Dialog */}
-      <Dialog open={isThemeOpen} onOpenChange={setIsThemeOpen}>
-        <DialogContent className={`${theme.bgPrimary} ${theme.text} border ${theme.border}`}>
-          <DialogHeader>
-            <DialogTitle className={`flex items-center gap-2 ${theme.text}`}>
-              <Palette className="h-5 w-5" />
-              Appearance
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <h3 className={`text-sm font-medium ${theme.textSecondary}`}>Select Theme</h3>
-            <div className="grid grid-cols-2 gap-4">
-              {Object.keys(themes).map((themeKey) => (
-                <ThemePreview
-                  key={themeKey}
-                  theme={themeKey}
-                  currentTheme={currentTheme}
-                  onClick={setCurrentTheme}
-                />
-              ))}
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <ThemeDialog
+        open={isThemeOpen}
+        onOpenChange={setIsThemeOpen}
+        currentTheme={currentTheme}
+        onThemeChange={setCurrentTheme}
+        theme={theme}
+      />
     </div>
   );
 };

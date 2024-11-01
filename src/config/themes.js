@@ -367,6 +367,119 @@ export const themes = {
         messageBot: 'bg-orange-800 text-orange-50',
         icon: 'text-amber-300'
       }
+    },
+    // TV Show Themes
+    simpsons: {
+      name: 'The Simpsons',
+      preview: {
+        primary: '#FED41D',
+        background: '#3B95D1',
+        text: '#000000',
+        accent: '#D6E69F'
+      },
+      colors: {
+        bgPrimary: 'bg-blue-400',
+        bgSecondary: 'bg-blue-500',
+        bgAccent: 'bg-yellow-300/50',
+        bgHover: 'hover:bg-blue-300',
+        text: 'text-gray-900',
+        textSecondary: 'text-gray-800',
+        textMuted: 'text-gray-700',
+        border: 'border-yellow-400',
+        accent: 'bg-yellow-400',
+        accentHover: 'hover:bg-yellow-500',
+        buttonHover: 'hover:bg-blue-300',
+        highlight: 'bg-yellow-200',
+        messageUser: 'bg-yellow-400 text-gray-900',
+        messageBot: 'bg-blue-300 text-gray-900',
+        icon: 'text-yellow-400'
+      }
+    },
+    dragonBallZ: {
+      name: 'Dragon Ball Z',
+      preview: {
+        primary: '#FF9232',
+        background: '#23238E',
+        text: '#ffffff',
+        accent: '#FF4900'
+      },
+      colors: {
+        bgPrimary: 'bg-indigo-900',
+        bgSecondary: 'bg-indigo-800',
+        bgAccent: 'bg-orange-500/50',
+        bgHover: 'hover:bg-indigo-700',
+        text: 'text-orange-50',
+        textSecondary: 'text-orange-100',
+        textMuted: 'text-orange-200',
+        border: 'border-orange-500',
+        accent: 'bg-orange-500',
+        accentHover: 'hover:bg-orange-600',
+        buttonHover: 'hover:bg-indigo-700',
+        highlight: 'bg-orange-500/30',
+        messageUser: 'bg-orange-500 text-white',
+        // Inspired by Goku's gi
+        messageBot: 'bg-blue-700 text-orange-50',
+        icon: 'text-orange-400'
+      }
+    },
+    naruto: {
+      name: 'Naruto',
+      preview: {
+        primary: '#FF6B2B',
+        background: '#000000',
+        text: '#ffffff',
+        accent: '#ED3E37'
+      },
+      colors: {
+        // Based on Naruto's outfit and general aesthetic
+        bgPrimary: 'bg-slate-900',
+        bgSecondary: 'bg-slate-800',
+        bgAccent: 'bg-orange-500/50',
+        bgHover: 'hover:bg-slate-700',
+        text: 'text-orange-50',
+        textSecondary: 'text-orange-100',
+        textMuted: 'text-orange-200',
+        // Red spiral inspired by the Uzumaki clan symbol
+        border: 'border-red-500',
+        accent: 'bg-orange-500',
+        accentHover: 'hover:bg-orange-600',
+        buttonHover: 'hover:bg-slate-700',
+        highlight: 'bg-orange-500/30',
+        // Orange from Naruto's outfit
+        messageUser: 'bg-orange-500 text-white',
+        // Black and red from Akatsuki theme
+        messageBot: 'bg-red-900 text-red-50',
+        icon: 'text-orange-400'
+      }
+    },
+    // Extended with additional anime-inspired theme
+    akatsuki: {
+      name: 'Akatsuki',
+      preview: {
+        primary: '#FF0000',
+        background: '#1A1A1A',
+        text: '#ffffff',
+        accent: '#CF0000'
+      },
+      colors: {
+        // Based on Akatsuki cloak colors
+        bgPrimary: 'bg-gray-900',
+        bgSecondary: 'bg-gray-800',
+        bgAccent: 'bg-red-900/50',
+        bgHover: 'hover:bg-gray-700',
+        text: 'text-red-50',
+        textSecondary: 'text-red-100',
+        textMuted: 'text-red-200',
+        // Red clouds pattern inspiration
+        border: 'border-red-800',
+        accent: 'bg-red-600',
+        accentHover: 'hover:bg-red-700',
+        buttonHover: 'hover:bg-gray-700',
+        highlight: 'bg-red-900/30',
+        messageUser: 'bg-red-600 text-white',
+        messageBot: 'bg-gray-800 text-red-50',
+        icon: 'text-red-500'
+      }
     }
   };
   

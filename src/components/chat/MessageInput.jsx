@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '../ui/button';
 import { Send } from 'lucide-react';
 import EnhancedTextarea from '../editor/EnhancedTextarea';
+import { cn } from '@/lib/utils';
 
 export const MessageInput = ({ onSend, disabled, theme }) => {
   const [message, setMessage] = useState('');
@@ -15,7 +16,7 @@ export const MessageInput = ({ onSend, disabled, theme }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-2">
+    <form onSubmit={handleSubmit} className="space-y-3">
       <EnhancedTextarea
         value={message}
         onChange={setMessage}
@@ -24,13 +25,23 @@ export const MessageInput = ({ onSend, disabled, theme }) => {
         onSubmit={handleSubmit}
         placeholder="Type your message..."
       />
-      <Button 
-        type="submit" 
-        disabled={disabled || !message.trim()}
-        className={`${theme.accent} ${theme.accentHover} text-white px-4 py-2 rounded-md`}
-      >
-        <Send className="h-4 w-4" />
-      </Button>
+      
+      <div className="flex justify-end">
+        <Button 
+          type="submit" 
+          disabled={disabled || !message.trim()}
+          className={cn(
+            "flex items-center gap-2 px-4 py-2 rounded-lg",
+            theme?.accent,
+            theme?.accentHover,
+            "transition-all duration-200",
+            "disabled:opacity-50"
+          )}
+        >
+          <span className="text-white">Send</span>
+          <Send className="h-4 w-4 text-white" />
+        </Button>
+      </div>
     </form>
   );
 };
