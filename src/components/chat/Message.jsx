@@ -1,41 +1,65 @@
-import React from 'react';
-import { formatResponse } from '../../utils/formatters';
+import React, { memo } from 'react';
+import { useTheme } from '../../contexts/ThemeContext';
+import { formatTimestamp } from '../../lib/formatters';
+import { MessageContent } from './MessageContent';
 import { cn } from '../../lib/utils';
 
-export const Message = ({ message, format = 'default', theme }) => {
+export const Message = memo(({ message }) => {
+  const { theme } = useTheme();
   const isUser = message.role === 'user';
-  
+
   return (
-    <div className={cn(
-      "flex w-full mb-4 animate-fadeIn relative z-10", 
-      isUser ? "justify-end" : "justify-start"
-    )}>
-      <div className={cn(
-        "max-w-[80%] rounded-lg p-4 break-words",
-        isUser ? theme.messageUser : theme.messageBot
-      )}>
+    <div
+      className={cn(
+        "flex w-full mb-4 animate-fadeIn",
+        isUser ? "justify-end" : "justify-start"
+      )}
+    >
+      <div
+        className={cn(
+          "max-w-[80%] rounded-lg p-4",
+          isUser ? theme.messageUser : theme.messageBot
+        )}
+      >
         <div className="flex justify-between items-start mb-2">
-          <span className={cn(
-            "text-xs", 
-            isUser ? "text-white/80" : theme.textMuted
-          )}>
-            {new Date(message.timestamp).toLocaleTimeString()}
+          <span
+            className={cn(
+              "text-xs",
+              isUser ? "text-white/80" : theme.textMuted
+            )}
+          >
+            {formatTimestamp(message.timestamp)}
           </span>
-          <span className={cn(
-            "text-xs font-medium capitalize",
-            isUser ? "text-white/80" : theme.textMuted
-          )}>
+          <span
+            className={cn(
+              "text-xs font-medium capitalize ml-2",
+              isUser ? "text-white/80" : theme.textMuted
+            )}
+          >
             {message.role}
           </span>
         </div>
-        
-        <div className={cn(
-          "message-content overflow-hidden",
-          isUser ? "text-white" : theme.text
-        )}>
-          {formatResponse(message.content, format)}
-        </div>
+
+        <MessageContent 
+          content={message.content}
+          sources={message.sources}
+          isUser={isUser}
+        />
+
+        {message.metadata && message.metadata.type === 'response' && (
+          <div className={`mt-2 pt-2 border-t ${theme.border} ${theme.textMuted} text-xs`}>
+            Generated using {message.metadata.strategy} strategy
+          </div>
+        )}
       </div>
     </div>
   );
-};
+}, (prevProps, nextProps) => {
+  // Memoization check
+  return (
+    prevProps.message.id === nextProps.message.id &&
+    prevProps.message.content === nextProps.message.content
+  );
+});
+
+Message.displayName = 'Message';

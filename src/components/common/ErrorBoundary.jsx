@@ -1,10 +1,11 @@
 import React from 'react';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { useTheme } from '../../contexts/ThemeContext';
 
-class ErrorBoundary extends React.Component {
+class ErrorBoundaryFallback extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false, error: null };
+    this.state = { hasError: false, error: null, errorInfo: null };
   }
 
   static getDerivedStateFromError(error) {
@@ -12,34 +13,104 @@ class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
+    this.setState({ errorInfo });
+    
+    // Log error to your error reporting service
     console.error('Error caught by boundary:', error, errorInfo);
   }
 
   render() {
-    if (this.state.hasError) {
-      return (
-        <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-          <div className="max-w-md w-full mx-auto p-6 bg-white rounded-lg shadow-sm border">
-            <div className="flex flex-col items-center gap-4 text-center">
-              <AlertTriangle className="h-12 w-12 text-destructive" />
-              <h1 className="text-xl font-semibold">Something went wrong</h1>
-              <p className="text-muted-foreground">
-                An error occurred while rendering the application. Please try refreshing the page.
-              </p>
+    if (!this.state.hasError) {
+      return this.props.children;
+    }
+
+    return <ErrorDisplay 
+      error={this.state.error}
+      errorInfo={this.state.errorInfo}
+      onReset={() => {
+        this.setState({ hasError: false, error: null, errorInfo: null });
+        this.props.onReset?.();
+      }}
+    />;
+  }
+}
+
+const ErrorDisplay = ({ error, errorInfo, onReset }) => {
+  const { theme } = useTheme();
+
+  return (
+    <div className={`h-full flex items-center justify-center p-4 ${theme.bgPrimary}`}>
+      <div className={`
+        max-w-md w-full mx-auto p-6 rounded-lg
+        border ${theme.border} ${theme.bgSecondary}
+      `}>
+        <div className="flex flex-col items-center gap-4 text-center">
+          <div className={`
+            h-12 w-12 rounded-full
+            ${theme.bgAccent} ${theme.text}
+            flex items-center justify-center
+          `}>
+            <AlertTriangle className="h-6 w-6" />
+          </div>
+
+          <div className="space-y-2">
+            <h1 className={`text-xl font-semibold ${theme.text}`}>
+              Something went wrong
+            </h1>
+            <p className={`text-sm ${theme.textMuted}`}>
+              {error?.message || 'An unexpected error occurred'}
+            </p>
+          </div>
+
+          <div className="space-y-4 w-full">
+            {process.env.NODE_ENV === 'development' && errorInfo && (
+              <details className="mt-4">
+                <summary className={`
+                  cursor-pointer text-sm ${theme.textMuted}
+                  hover:${theme.textSecondary}
+                `}>
+                  Show error details
+                </summary>
+                <pre className={`
+                  mt-2 p-4 rounded-lg text-xs overflow-auto
+                  ${theme.bgPrimary} ${theme.text}
+                  max-h-[200px]
+                `}>
+                  {errorInfo.componentStack}
+                </pre>
+              </details>
+            )}
+
+            <div className="flex gap-2 justify-center">
               <button
-                onClick={() => window.location.reload()}
-                className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+                onClick={onReset}
+                className={`
+                  flex items-center gap-2 px-4 py-2 rounded-md
+                  ${theme.accent} text-white
+                  hover:${theme.accentHover}
+                  transition-colors
+                `}
               >
-                Refresh Page
+                <RefreshCw className="h-4 w-4" />
+                Try Again
               </button>
             </div>
           </div>
         </div>
-      );
-    }
+      </div>
+    </div>
+  );
+};
 
-    return this.props.children;
-  }
-}
+// Higher-order component for easy wrapping
+export const withErrorBoundary = (Component, options = {}) => {
+  return function WithErrorBoundary(props) {
+    return (
+      <ErrorBoundaryFallback onReset={options.onReset}>
+        <Component {...props} />
+      </ErrorBoundaryFallback>
+    );
+  };
+};
 
-export default ErrorBoundary;
+export default ErrorBoundaryFallback;

@@ -1,59 +1,74 @@
-import React, { useEffect } from 'react';
+import React, { useRef, useMemo } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
+import { useTheme } from '../../contexts/ThemeContext';
 import { Message } from './Message';
-import { ScrollArea } from '../ui/scroll-area';
-import { Loader2, ChevronDown } from 'lucide-react';
 import { useAutoScroll } from '../../hooks/useAutoScroll';
+import { ScrollArea } from '../ui/scroll-area';
+import { ChevronDown } from 'lucide-react';
 
-export const ChatMessages = ({ messages, isLoading, format, theme }) => {
-  const {
+export const ChatMessages = ({ messages }) => {
+  const { theme } = useTheme();
+  const parentRef = useRef(null);
+  
+  const { 
     scrollRef,
     handleScroll,
     scrollToBottom,
     isAutoScrollEnabled,
     userHasScrolled
   } = useAutoScroll({
-    dependencies: [messages.length, isLoading], // Use messages.length instead of messages array
+    dependencies: [messages.length],
     threshold: 150,
     smoothness: 300
   });
 
-  // Force scroll to bottom on new user message
-  useEffect(() => {
-    const lastMessage = messages[messages.length - 1];
-    if (lastMessage?.role === 'user') {
-      scrollToBottom(true);
-    }
-  }, [messages, scrollToBottom]);
+  // Create virtual rows for messages
+  const rowVirtualizer = useVirtualizer({
+    count: messages.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 100, // Estimated row height
+    overscan: 5 // Number of items to render outside of view
+  });
+
+  // Memoize virtual items to prevent unnecessary re-renders
+  const virtualItems = useMemo(() => 
+    rowVirtualizer.getVirtualItems(),
+    [messages.length, rowVirtualizer]
+  );
 
   return (
-    <div className="relative h-full">
+    <div className="relative h-full" ref={scrollRef}>
       <ScrollArea 
-        ref={scrollRef}
-        className="h-full" 
+        ref={parentRef}
+        className="h-full"
         onScrollCapture={handleScroll}
       >
-        <div className="flex flex-col space-y-4 p-4">
-          {messages.map((message) => (
-            <Message 
-              key={message.id} 
-              message={message}
-              format={format}
-              theme={theme}
-            />
-          ))}
-          
-          {isLoading && (
-            <div className="flex justify-start w-full">
-              <div className={`max-w-[80%] rounded-lg p-4 ${theme.messageBot}`}>
-                <div className="flex items-center gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span className={`text-sm ${theme.textMuted}`}>
-                    Assistant is thinking...
-                  </span>
-                </div>
+        <div
+          style={{
+            height: `${rowVirtualizer.getTotalSize()}px`,
+            width: '100%',
+            position: 'relative'
+          }}
+        >
+          {virtualItems.map(virtualRow => {
+            const message = messages[virtualRow.index];
+            return (
+              <div
+                key={message.id}
+                data-index={virtualRow.index}
+                ref={rowVirtualizer.measureElement}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  transform: `translateY(${virtualRow.start}px)`
+                }}
+              >
+                <Message message={message} />
               </div>
-            </div>
-          )}
+            );
+          })}
         </div>
       </ScrollArea>
 
@@ -69,6 +84,7 @@ export const ChatMessages = ({ messages, isLoading, format, theme }) => {
             transition-all transform
             shadow-lg
             flex items-center gap-2
+            z-10
           `}
         >
           <ChevronDown className={`h-4 w-4 ${theme.icon}`} />
