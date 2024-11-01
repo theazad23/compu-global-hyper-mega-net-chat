@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDocuments } from '../../hooks/useDocuments';
 import { DocumentUpload } from './DocumentUpload';
 import { Button } from '../ui/button';
 import { ScrollArea } from '../ui/scroll-area';
-import { Trash2, FileText, Upload } from 'lucide-react';
+import { Trash2, FileText, Upload, AlertTriangle } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
-import { ErrorMessage } from '../common/ErrorMessage';
 import { EmptyState } from '../common/EmptyState';
 import { DocumentSkeleton } from '../common/SkeletonLoader';
 
@@ -18,7 +17,21 @@ export const DocumentList = ({ theme }) => {
     refreshDocuments 
   } = useDocuments();
 
+  const [showLoading, setShowLoading] = useState(true);
   const [deleteDialog, setDeleteDialog] = useState({ open: false, documentId: null });
+
+  // Delayed loading state to prevent flash
+  useEffect(() => {
+    if (isLoading) {
+      setShowLoading(true);
+    } else {
+      // Small delay before hiding loading state to ensure smooth transition
+      const timer = setTimeout(() => {
+        setShowLoading(false);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading]);
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleString('en-US', {
@@ -30,39 +43,51 @@ export const DocumentList = ({ theme }) => {
     });
   };
 
-  if (isLoading) return <DocumentSkeleton />;
+  // Common header component
+  const Header = () => (
+    <div className="flex justify-between items-center mb-4">
+      <h2 className={`text-lg font-semibold ${theme.text}`}>Documents</h2>
+      <DocumentUpload id="upload-trigger" theme={theme} />
+    </div>
+  );
 
-  if (error) {
+  const renderContent = () => {
+    if (showLoading) {
+      return <DocumentSkeleton theme={theme} />;
+    }
+
+    if (error) {
+      return (
+        <div className={`rounded-lg border ${theme.border} p-4`}>
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5 text-destructive" />
+            <p className={`text-sm ${theme.text}`}>{error}</p>
+          </div>
+          <Button
+            onClick={refreshDocuments}
+            variant="outline"
+            className={`mt-4 ${theme.border} ${theme.text}`}
+          >
+            Try Again
+          </Button>
+        </div>
+      );
+    }
+
+    if (!documents.length) {
+      return (
+        <EmptyState
+          title="No Documents"
+          description="Upload documents to enhance the chat's knowledge."
+          icon={Upload}
+          actionLabel="Upload Document"
+          onAction={() => document.getElementById('upload-trigger')?.click()}
+          theme={theme}
+        />
+      );
+    }
+
     return (
-      <ErrorMessage 
-        message={error}
-        onRetry={refreshDocuments}
-        className="mt-4"
-      />
-    );
-  }
-
-  if (!documents.length) {
-    return (
-      <EmptyState
-        title="No Documents"
-        description="Upload documents to enhance the chat's knowledge."
-        icon={Upload}
-        actionLabel="Upload Document"
-        onAction={() => document.getElementById('upload-trigger')?.click()}
-      />
-    );
-  }
-
-  return (
-    <div className="h-full flex flex-col">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-4 flex-none">
-        <h2 className={`text-lg font-semibold ${theme.text}`}>Documents</h2>
-        <DocumentUpload id="upload-trigger" theme={theme} />
-      </div>
-
-      {/* Document List */}
       <ScrollArea className="flex-1">
         <div className="space-y-3 pr-4">
           {documents.map((doc) => (
@@ -70,19 +95,24 @@ export const DocumentList = ({ theme }) => {
               key={doc.document_id}
               className={`
                 flex items-center justify-between p-4 rounded-lg
-                border transition-colors
+                border transition-all duration-200
                 ${theme.bgPrimary} ${theme.border}
                 hover:border-primary/50
               `}
             >
               <div className="flex items-center gap-3 min-w-0 flex-1">
-                <FileText className={`h-5 w-5 ${theme.icon} flex-shrink-0`} />
+                <div className={`
+                  p-2 rounded-lg
+                  ${theme.bgSecondary}
+                `}>
+                  <FileText className={`h-5 w-5 ${theme.icon}`} />
+                </div>
                 <div className="min-w-0 flex-1">
                   <h3 className={`font-medium text-sm truncate ${theme.text}`}>
                     {doc.metadata.title || doc.metadata.filename}
                   </h3>
                   {doc.metadata.description && (
-                    <p className={`text-sm ${theme.textMuted} truncate`}>
+                    <p className={`text-sm ${theme.textMuted} truncate mt-0.5`}>
                       {doc.metadata.description}
                     </p>
                   )}
@@ -110,6 +140,17 @@ export const DocumentList = ({ theme }) => {
           ))}
         </div>
       </ScrollArea>
+    );
+  };
+
+  return (
+    <div className={`
+      h-full flex flex-col 
+      ${theme.bgPrimary} 
+      transition-all duration-300
+    `}>
+      <Header />
+      {renderContent()}
 
       {/* Delete Dialog */}
       <Dialog 
