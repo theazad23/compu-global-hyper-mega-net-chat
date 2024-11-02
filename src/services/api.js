@@ -21,7 +21,7 @@ const handleResponse = async (response) => {
 export const api = {
   async createConversation() {
     try {
-      const response = await fetch(`${API_BASE_URL}/conversation/create`, {
+      const response = await fetch(`${API_BASE_URL}/conversation`, {
         method: 'POST',
       });
       return handleResponse(response);
@@ -33,7 +33,7 @@ export const api = {
 
   async getConversations() {
     try {
-      const response = await fetch(`${API_BASE_URL}/conversations`);
+      const response = await fetch(`${API_BASE_URL}/conversation`);
       return handleResponse(response);
     } catch (error) {
       console.error('Get conversations error:', error);
@@ -86,7 +86,7 @@ export const api = {
   async continueConversation(conversationId, requestBody) {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/conversation/${conversationId}/continue`, 
+        `${API_BASE_URL}/conversation/${conversationId}/continue`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -129,7 +129,7 @@ export const api = {
 
   async uploadDocument(formData) {
     try {
-      const response = await fetch(`${API_BASE_URL}/document/upload`, {
+      const response = await fetch(`${API_BASE_URL}/document`, {
         method: 'POST',
         body: formData,
       });
@@ -142,7 +142,7 @@ export const api = {
 
   async getDocuments() {
     try {
-      const response = await fetch(`${API_BASE_URL}/documents`);
+      const response = await fetch(`${API_BASE_URL}/document`);
       return handleResponse(response);
     } catch (error) {
       console.error('Get documents error:', error);
