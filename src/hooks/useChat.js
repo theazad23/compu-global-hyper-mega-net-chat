@@ -21,7 +21,7 @@ export const useChat = () => {
     try {
       const response = await api.createConversation();
       setConversationId(response.conversation_id);
-      setMessages([]); // Clear messages for new conversation
+      setMessages([]);
       return response.conversation_id;
     } catch (err) {
       console.error('Failed to create conversation:', err);
@@ -36,7 +36,7 @@ export const useChat = () => {
       await createNewConversation();
       return;
     }
-    
+
     setIsLoading(true);
     setError(null);
     try {
@@ -81,7 +81,7 @@ export const useChat = () => {
         role: 'assistant',
         content: response.response,
         timestamp: new Date().toISOString(),
-        sources: response.sources || []
+        metadata: response.metadata || {}
       };
       setMessages(prev => [...prev, assistantMessage]);
 
@@ -93,6 +93,134 @@ export const useChat = () => {
     }
   }, [conversationId]);
 
+  const retryMessage = useCallback(async (messageId, settings = {}) => {
+    if (!conversationId) {
+      setError('No active conversation');
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // Find the message to retry
+      const messageIndex = messages.findIndex(m => m.id === messageId);
+      if (messageIndex === -1) {
+        throw new Error('Message not found');
+      }
+
+      const message = messages[messageIndex];
+      const isUserMessage = message.role === 'user';
+
+      // If retrying a user message, we want to retry their question
+      // If retrying an assistant message, we want to retry with the previous user message
+      const questionToRetry = isUserMessage
+        ? message.content
+        : messages[messageIndex - 1]?.content;
+
+      if (!questionToRetry) {
+        throw new Error('No question found to retry');
+      }
+
+      const response = await api.continueConversation(conversationId, {
+        question: questionToRetry,
+        strategy: settings.strategy,
+        response_format: settings.responseFormat,
+        context_mode: settings.contextMode
+      });
+
+      // Remove messages after the retried message
+      const updatedMessages = messages.slice(0, isUserMessage ? messageIndex : messageIndex - 1);
+
+      // Add the new messages
+      if (isUserMessage) {
+        updatedMessages.push({
+          id: Date.now(),
+          role: 'user',
+          content: questionToRetry,
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      updatedMessages.push({
+        id: Date.now() + 1,
+        role: 'assistant',
+        content: response.response,
+        timestamp: new Date().toISOString(),
+        metadata: response.metadata || {}
+      });
+
+      setMessages(updatedMessages);
+
+    } catch (err) {
+      console.error('Failed to retry message:', err);
+      setError(err.message || 'Failed to retry message');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [conversationId, messages]);
+
+  const editMessage = useCallback(async (messageId, newContent, preserveHistory = true, settings = {}) => {
+    if (!conversationId) {
+      setError('No active conversation');
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const messageIndex = messages.findIndex(m => m.id === messageId);
+      if (messageIndex === -1) {
+        throw new Error('Message not found');
+      }
+
+      const message = messages[messageIndex];
+      if (message.role !== 'user') {
+        throw new Error('Can only edit user messages');
+      }
+
+      // Keep messages up to the edited message if preserving history
+      // Otherwise, keep only messages before the edited message
+      const updatedMessages = preserveHistory
+        ? messages.slice(0, messageIndex + 1)
+        : messages.slice(0, messageIndex);
+
+      // Add the edited message
+      updatedMessages.push({
+        id: Date.now(),
+        role: 'user',
+        content: newContent,
+        timestamp: new Date().toISOString()
+      });
+
+      // Get new response
+      const response = await api.continueConversation(conversationId, {
+        question: newContent,
+        strategy: settings.strategy,
+        response_format: settings.responseFormat,
+        context_mode: settings.contextMode
+      });
+
+      // Add assistant's response
+      updatedMessages.push({
+        id: Date.now() + 1,
+        role: 'assistant',
+        content: response.response,
+        timestamp: new Date().toISOString(),
+        metadata: response.metadata || {}
+      });
+
+      setMessages(updatedMessages);
+
+    } catch (err) {
+      console.error('Failed to edit message:', err);
+      setError(err.message || 'Failed to edit message');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [conversationId, messages]);
+
   return {
     messages,
     isLoading,
@@ -100,6 +228,8 @@ export const useChat = () => {
     sendMessage,
     conversationId,
     loadConversation,
-    createNewConversation
+    createNewConversation,
+    retryMessage,
+    editMessage
   };
 };

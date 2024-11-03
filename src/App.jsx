@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { 
-  MessageSquare, 
-  Files, 
+import React, { useState, useEffect } from 'react';
+import {
+  MessageSquare,
+  Files,
   Palette,
   Settings,
   Download,
@@ -10,7 +10,7 @@ import {
   MessagesSquare
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { ScrollArea } from '@/components/ui/scroll-area';  // Add this import
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { themes } from './config/themes';
 import { DocumentList } from './components/documents/DocumentList';
 import { ConversationList } from './components/chat/ConversationList';
@@ -21,8 +21,8 @@ import { useChat } from './hooks/useChat';
 import { EmptyState } from './components/common/EmptyState';
 import { ThemedButton } from './components/ui/button';
 import { CollapsibleSidebar } from './components/layout/CollapsibleSidebar';
+import { useLocalStorage } from './hooks/useLocalStorage';
 
-// Theme category definitions
 const themeCategories = {
   base: {
     label: "Base Themes",
@@ -46,10 +46,9 @@ const themeCategories = {
   }
 };
 
-// Theme preview component
 const ThemePreview = ({ theme, currentTheme, onClick }) => {
   const colors = themes[theme].preview;
-  
+
   return (
     <button
       onClick={() => onClick(theme)}
@@ -80,7 +79,7 @@ const ThemeDialog = ({ open, onOpenChange, currentTheme, onThemeChange, theme })
           Appearance
         </DialogTitle>
       </DialogHeader>
-      
+
       <ScrollArea className="max-h-[60vh]">
         <div className="space-y-6 px-2 pb-4">
           {Object.entries(themeCategories).map(([categoryKey, category]) => (
@@ -107,14 +106,74 @@ const ThemeDialog = ({ open, onOpenChange, currentTheme, onThemeChange, theme })
 );
 
 const App = () => {
-  const [currentTheme, setCurrentTheme] = useState('light');
+  // Theme and UI State
+  const [currentTheme, setCurrentTheme] = useState(() => {
+    try {
+      const savedTheme = localStorage.getItem('theme');
+      return savedTheme || 'light';
+    } catch {
+      return 'light';
+    }
+  });
   const [isThemeOpen, setIsThemeOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('chat');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
+    try {
+      const savedSidebarState = localStorage.getItem('sidebarOpen');
+      return savedSidebarState ? JSON.parse(savedSidebarState) : true;
+    } catch {
+      return true;
+    }
+  });
+  
+  // Chat State
   const [selectedConversation, setSelectedConversation] = useState(null);
-  const theme = themes[currentTheme].colors;
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [chatSettings, setChatSettings] = useState(() => {
+    try {
+      const savedSettings = localStorage.getItem('chatSettings');
+      return savedSettings ? JSON.parse(savedSettings) : {
+        strategy: 'standard',
+        responseFormat: 'markdown',
+        contextMode: 'flexible'
+      };
+    } catch {
+      return {
+        strategy: 'standard',
+        responseFormat: 'markdown',
+        contextMode: 'flexible'
+      };
+    }
+  });
 
+  useEffect(() => {
+    try {
+      localStorage.setItem('theme', currentTheme);
+    } catch (error) {
+      console.error('Failed to save theme to localStorage:', error);
+    }
+  }, [currentTheme]);
+  
+  useEffect(() => {
+    try {
+      localStorage.setItem('sidebarOpen', JSON.stringify(isSidebarOpen));
+    } catch (error) {
+      console.error('Failed to save sidebar state to localStorage:', error);
+    }
+  }, [isSidebarOpen]);
+  
+  useEffect(() => {
+    try {
+      localStorage.setItem('chatSettings', JSON.stringify(chatSettings));
+    } catch (error) {
+      console.error('Failed to save chat settings to localStorage:', error);
+    }
+  }, [chatSettings]);
+
+  // Theme Configuration
+  const theme = themes[currentTheme].colors;
+
+  // Chat Hook
   const {
     messages,
     isLoading,
@@ -122,15 +181,44 @@ const App = () => {
     sendMessage,
     conversationId,
     loadConversation,
-    createNewConversation
+    createNewConversation,
+    retryMessage,
+    editMessage
   } = useChat();
 
-  const [chatSettings, setChatSettings] = useState({
-    strategy: 'standard',
-    responseFormat: 'markdown',
-    contextMode: 'flexible'
-  });
+  // Message Handlers
+  const handleRetryMessage = async (message) => {
+    if (!conversationId) return;
 
+    try {
+      await retryMessage(message.id, chatSettings);
+    } catch (err) {
+      console.error('Error retrying message:', err);
+      // You might want to show an error notification here
+    }
+  };
+
+  const handleEditMessage = async (messageId, newContent, preserveHistory) => {
+    if (!conversationId) return;
+
+    try {
+      await editMessage(messageId, newContent, preserveHistory, chatSettings);
+    } catch (err) {
+      console.error('Error editing message:', err);
+      // You might want to show an error notification here
+    }
+  };
+
+  const handleSendMessage = async (message) => {
+    try {
+      await sendMessage(message, chatSettings);
+    } catch (err) {
+      console.error('Error sending message:', err);
+      // You might want to show an error notification here
+    }
+  };
+
+  // Conversation Handlers
   const handleSelectConversation = (conversation) => {
     setSelectedConversation(conversation);
     if (conversation?.conversation_id) {
@@ -143,32 +231,18 @@ const App = () => {
     await createNewConversation();
   };
 
-  const handleSendMessage = async (message) => {
-    await sendMessage(message, chatSettings);
-  };
-
-  const getChatTitle = () => {
-    if (!selectedConversation) {
-      return "New Chat";
-    }
-    return selectedConversation.title || 
-           (selectedConversation.questions_asked?.[0]?.length > 40 
-             ? `${selectedConversation.questions_asked[0].substring(0, 40)}...` 
-             : selectedConversation.questions_asked?.[0]) || 
-           "New Chat";
-  };
-
+  // Export Functionality
   const handleExportChat = () => {
     if (!messages.length) return;
-    
+
     const chatHistory = messages.map(msg => ({
       role: msg.role,
       content: msg.content,
       timestamp: msg.timestamp
     }));
-    
-    const blob = new Blob([JSON.stringify(chatHistory, null, 2)], { 
-      type: 'application/json' 
+
+    const blob = new Blob([JSON.stringify(chatHistory, null, 2)], {
+      type: 'application/json'
     });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -180,15 +254,47 @@ const App = () => {
     URL.revokeObjectURL(url);
   };
 
+  // Title Helper
+  const getChatTitle = () => {
+    if (!selectedConversation) {
+      return "New Chat";
+    }
+    return selectedConversation.title ||
+           (selectedConversation.questions_asked?.[0]?.length > 40
+             ? `${selectedConversation.questions_asked[0].substring(0, 40)}...`
+             : selectedConversation.questions_asked?.[0]) ||
+           "New Chat";
+  };
+
+  // Error Handling
+  if (error) {
+    return (
+      <div className={`flex items-center justify-center h-screen ${theme.bgPrimary}`}>
+        <div className={`text-center ${theme.text}`}>
+          <h2 className="text-2xl font-bold mb-2">Something went wrong</h2>
+          <p className={theme.textMuted}>{error}</p>
+          <ThemedButton
+            onClick={createNewConversation}
+            theme={theme}
+            className="mt-4"
+          >
+            Try Again
+          </ThemedButton>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={`h-screen flex flex-col ${theme.bgSecondary} transition-colors duration-200`}>
+      {/* Header */}
       <header className={`h-16 border-b ${theme.border} ${theme.bgPrimary} flex items-center justify-between px-6 flex-shrink-0`}>
         <div className="flex items-center gap-2">
           <MessagesSquare className={`h-6 w-6 ${theme.accent} text-white rounded-lg p-1`} />
           <h1 className={`text-xl font-semibold ${theme.text}`}>Compu-Global-Hyper-Mega-Net-Chat</h1>
         </div>
         <div className="flex items-center gap-3">
-          <ThemedButton 
+          <ThemedButton
             variant="ghost"
             size="icon"
             theme={theme}
@@ -202,7 +308,7 @@ const App = () => {
       </header>
 
       <div className="flex-1 flex overflow-hidden">
-        {/* Collapsible Sidebar */}
+        {/* Sidebar */}
         <CollapsibleSidebar
           isOpen={isSidebarOpen}
           onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -243,7 +349,7 @@ const App = () => {
           </div>
         </CollapsibleSidebar>
 
-        {/* Main Content */}
+        {/* Main Chat Area */}
         <div className={`flex-1 flex flex-col ${theme.bgPrimary} overflow-hidden`}>
           <div className={`flex flex-col h-full ${theme.bgPrimary} rounded-lg shadow-sm border ${theme.border}`}>
             <div className={`border-b ${theme.border} ${theme.bgPrimary}`}>
@@ -254,6 +360,7 @@ const App = () => {
                     size="icon"
                     theme={theme}
                     className="lg:hidden"
+                    onClick={() => setIsSidebarOpen(!isSidebarOpen)}
                   >
                     <History className={`h-5 w-5 ${theme.icon}`} />
                   </ThemedButton>
@@ -266,7 +373,7 @@ const App = () => {
                     </span>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center gap-2">
                   <ThemedButton
                     variant="ghost"
@@ -310,6 +417,8 @@ const App = () => {
                   isLoading={isLoading}
                   format={chatSettings.responseFormat}
                   theme={theme}
+                  onRetry={handleRetryMessage}
+                  onEdit={handleEditMessage}
                 />
               )}
             </div>

@@ -1,11 +1,17 @@
 import React, { useEffect, useRef } from 'react';
 import { Message } from './Message';
 import { ScrollArea } from '../ui/scroll-area';
-import { Loader2 } from 'lucide-react';
+import { Loader2, MessageSquare } from 'lucide-react';
 import { EmptyState } from '../common/EmptyState';
-import { MessageSquare } from 'lucide-react';
 
-export const MessageList = ({ messages, format, onViewSources, isLoading, theme }) => {
+export const MessageList = ({ 
+  messages, 
+  format, 
+  onRetry,
+  onEdit,
+  isLoading, 
+  theme 
+}) => {
   const scrollContainerRef = useRef(null);
 
   useEffect(() => {
@@ -35,11 +41,12 @@ export const MessageList = ({ messages, format, onViewSources, isLoading, theme 
     <ScrollArea ref={scrollContainerRef} className="h-full">
       <div className="flex flex-col space-y-4 p-4">
         {messages.map((message) => (
-          <Message 
-            key={message.id} 
+          <Message
+            key={message.id}
             message={message}
             format={format}
-            onViewSources={onViewSources}
+            onRetry={onRetry}
+            onEdit={onEdit}
             theme={theme}
           />
         ))}
