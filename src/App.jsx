@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   MessageSquare,
   Files,
@@ -106,74 +106,22 @@ const ThemeDialog = ({ open, onOpenChange, currentTheme, onThemeChange, theme })
 );
 
 const App = () => {
-  // Theme and UI State
-  const [currentTheme, setCurrentTheme] = useState(() => {
-    try {
-      const savedTheme = localStorage.getItem('theme');
-      return savedTheme || 'light';
-    } catch {
-      return 'light';
-    }
-  });
+  const [currentTheme, setCurrentTheme] = useLocalStorage('theme', 'light');
   const [isThemeOpen, setIsThemeOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('chat');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
-    try {
-      const savedSidebarState = localStorage.getItem('sidebarOpen');
-      return savedSidebarState ? JSON.parse(savedSidebarState) : true;
-    } catch {
-      return true;
-    }
-  });
-  
-  // Chat State
+  const [isSidebarOpen, setIsSidebarOpen] = useLocalStorage('sidebarOpen', true);
   const [selectedConversation, setSelectedConversation] = useState(null);
-  const [chatSettings, setChatSettings] = useState(() => {
-    try {
-      const savedSettings = localStorage.getItem('chatSettings');
-      return savedSettings ? JSON.parse(savedSettings) : {
-        strategy: 'standard',
-        responseFormat: 'markdown',
-        contextMode: 'flexible'
-      };
-    } catch {
-      return {
-        strategy: 'standard',
-        responseFormat: 'markdown',
-        contextMode: 'flexible'
-      };
-    }
+  const [chatSettings, setChatSettings] = useLocalStorage('chatSettings', {
+    strategy: 'standard',
+    responseFormat: 'markdown',
+    contextMode: 'flexible'
   });
 
-  useEffect(() => {
-    try {
-      localStorage.setItem('theme', currentTheme);
-    } catch (error) {
-      console.error('Failed to save theme to localStorage:', error);
-    }
-  }, [currentTheme]);
-  
-  useEffect(() => {
-    try {
-      localStorage.setItem('sidebarOpen', JSON.stringify(isSidebarOpen));
-    } catch (error) {
-      console.error('Failed to save sidebar state to localStorage:', error);
-    }
-  }, [isSidebarOpen]);
-  
-  useEffect(() => {
-    try {
-      localStorage.setItem('chatSettings', JSON.stringify(chatSettings));
-    } catch (error) {
-      console.error('Failed to save chat settings to localStorage:', error);
-    }
-  }, [chatSettings]);
+  const [pendingMessageId, setPendingMessageId] = useState(null);
 
-  // Theme Configuration
   const theme = themes[currentTheme].colors;
 
-  // Chat Hook
   const {
     messages,
     isLoading,
@@ -183,18 +131,28 @@ const App = () => {
     loadConversation,
     createNewConversation,
     retryMessage,
-    editMessage
+    editMessage,
+    setMessages
   } = useChat();
 
-  // Message Handlers
-  const handleRetryMessage = async (message) => {
+  const handleRetryMessage = async (messageId, content, preserveHistory) => {
     if (!conversationId) return;
 
     try {
-      await retryMessage(message.id, chatSettings);
+      setPendingMessageId(messageId);
+
+      if (!preserveHistory) {
+        const messageIndex = messages.findIndex(m => m.id === messageId);
+        if (messageIndex !== -1) {
+          setMessages(messages.slice(0, messageIndex));
+        }
+      }
+
+      await retryMessage(messageId, content, preserveHistory, chatSettings);
     } catch (err) {
       console.error('Error retrying message:', err);
-      // You might want to show an error notification here
+    } finally {
+      setPendingMessageId(null);
     }
   };
 
@@ -202,10 +160,20 @@ const App = () => {
     if (!conversationId) return;
 
     try {
+      setPendingMessageId(messageId);
+
+      if (!preserveHistory) {
+        const messageIndex = messages.findIndex(m => m.id === messageId);
+        if (messageIndex !== -1) {
+          setMessages(messages.slice(0, messageIndex));
+        }
+      }
+
       await editMessage(messageId, newContent, preserveHistory, chatSettings);
     } catch (err) {
       console.error('Error editing message:', err);
-      // You might want to show an error notification here
+    } finally {
+      setPendingMessageId(null);
     }
   };
 
@@ -214,11 +182,9 @@ const App = () => {
       await sendMessage(message, chatSettings);
     } catch (err) {
       console.error('Error sending message:', err);
-      // You might want to show an error notification here
     }
   };
 
-  // Conversation Handlers
   const handleSelectConversation = (conversation) => {
     setSelectedConversation(conversation);
     if (conversation?.conversation_id) {
@@ -231,7 +197,6 @@ const App = () => {
     await createNewConversation();
   };
 
-  // Export Functionality
   const handleExportChat = () => {
     if (!messages.length) return;
 
@@ -254,7 +219,6 @@ const App = () => {
     URL.revokeObjectURL(url);
   };
 
-  // Title Helper
   const getChatTitle = () => {
     if (!selectedConversation) {
       return "New Chat";
@@ -266,7 +230,6 @@ const App = () => {
            "New Chat";
   };
 
-  // Error Handling
   if (error) {
     return (
       <div className={`flex items-center justify-center h-screen ${theme.bgPrimary}`}>
@@ -291,7 +254,7 @@ const App = () => {
       <header className={`h-16 border-b ${theme.border} ${theme.bgPrimary} flex items-center justify-between px-6 flex-shrink-0`}>
         <div className="flex items-center gap-2">
           <MessagesSquare className={`h-6 w-6 ${theme.accent} text-white rounded-lg p-1`} />
-          <h1 className={`text-xl font-semibold ${theme.text}`}>Compu-Global-Hyper-Mega-Net-Chat</h1>
+          <h1 className={`text-xl font-semibold ${theme.text}`}>Chat Application</h1>
         </div>
         <div className="flex items-center gap-3">
           <ThemedButton
@@ -308,7 +271,6 @@ const App = () => {
       </header>
 
       <div className="flex-1 flex overflow-hidden">
-        {/* Sidebar */}
         <CollapsibleSidebar
           isOpen={isSidebarOpen}
           onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -349,7 +311,6 @@ const App = () => {
           </div>
         </CollapsibleSidebar>
 
-        {/* Main Chat Area */}
         <div className={`flex-1 flex flex-col ${theme.bgPrimary} overflow-hidden`}>
           <div className={`flex flex-col h-full ${theme.bgPrimary} rounded-lg shadow-sm border ${theme.border}`}>
             <div className={`border-b ${theme.border} ${theme.bgPrimary}`}>
@@ -414,11 +375,12 @@ const App = () => {
               ) : (
                 <MessageList
                   messages={messages}
-                  isLoading={isLoading}
                   format={chatSettings.responseFormat}
                   theme={theme}
                   onRetry={handleRetryMessage}
                   onEdit={handleEditMessage}
+                  isLoading={isLoading}
+                  pendingMessageId={pendingMessageId}
                 />
               )}
             </div>
@@ -434,7 +396,6 @@ const App = () => {
         </div>
       </div>
 
-      {/* Settings Dialog */}
       <ChatSettings
         open={isSettingsOpen}
         onOpenChange={setIsSettingsOpen}
@@ -443,7 +404,6 @@ const App = () => {
         theme={theme}
       />
 
-      {/* Theme Dialog */}
       <ThemeDialog
         open={isThemeOpen}
         onOpenChange={setIsThemeOpen}

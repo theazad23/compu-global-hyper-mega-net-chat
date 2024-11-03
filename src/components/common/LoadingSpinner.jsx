@@ -2,10 +2,10 @@ import React from 'react';
 import { Loader2 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
-export const LoadingSpinner = ({ 
-  className, 
+export const LoadingSpinner = ({
+  className,
   size = "default",
-  fullScreen = false 
+  fullScreen = false
 }) => {
   if (fullScreen) {
     return (
@@ -23,7 +23,10 @@ export const LoadingSpinner = ({
 
   return (
     <div className={cn('flex items-center justify-center p-4', className)}>
-      <Loader2 className={cn('animate-spin text-primary', sizeClasses[size])} />
+      <Loader2 className={cn(
+        'animate-spin text-primary',
+        sizeClasses[size]
+      )} />
     </div>
   );
 };

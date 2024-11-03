@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '../ui/button';
 import { Send } from 'lucide-react';
-import EnhancedTextarea from '../editor/EnhancedTextarea';
 import { cn } from '@/lib/utils';
 
 export const MessageInput = ({ onSend, disabled, theme }) => {
@@ -15,20 +14,35 @@ export const MessageInput = ({ onSend, disabled, theme }) => {
     }
   };
 
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit();
+    }
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
-      <EnhancedTextarea
+      <textarea
         value={message}
-        onChange={setMessage}
+        onChange={(e) => setMessage(e.target.value)}
+        onKeyDown={handleKeyDown}
         disabled={disabled}
-        theme={theme}
-        onSubmit={handleSubmit}
         placeholder="Type your message..."
+        className={cn(
+          "w-full min-h-[100px] p-3 rounded-lg resize-none",
+          "font-mono text-sm",
+          theme?.bgSecondary,
+          theme?.border,
+          theme?.text,
+          "focus:outline-none focus:ring-2 focus:ring-blue-500/20",
+          "disabled:opacity-50"
+        )}
       />
-      
+
       <div className="flex justify-end">
-        <Button 
-          type="submit" 
+        <Button
+          type="submit"
           disabled={disabled || !message.trim()}
           className={cn(
             "flex items-center gap-2 px-4 py-2 rounded-lg",

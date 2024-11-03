@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { ScrollArea } from '../ui/scroll-area';
 import { Button } from '../ui/button';
-import { 
-  MessageSquare, 
-  Trash2, 
+import {
+  MessageSquare,
+  Trash2,
   Clock,
   RefreshCw,
   Plus
@@ -14,11 +14,11 @@ import { EmptyState } from '../common/EmptyState';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 import { api } from '../../services/api';
 
-export const ConversationList = ({ 
-  onSelectConversation, 
+export const ConversationList = ({
+  onSelectConversation,
   currentConversationId,
   onNewChat,
-  theme 
+  theme
 }) => {
   const [conversations, setConversations] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -56,31 +56,27 @@ export const ConversationList = ({
   };
 
   const getConversationItem = (conversation) => {
-    // Calculate total messages by counting questions and responses
-    const questionsCount = Array.isArray(conversation.questions_asked) 
-      ? conversation.questions_asked.length 
-      : 0;
-    
-    const responsesCount = Array.isArray(conversation.responses) 
-      ? conversation.responses.length 
+    const questionsCount = Array.isArray(conversation.questions_asked)
+      ? conversation.questions_asked.length
       : 0;
 
-    // If we have messages array, use its length
-    const messagesCount = Array.isArray(conversation.messages) 
-      ? conversation.messages.length 
+    const responsesCount = Array.isArray(conversation.responses)
+      ? conversation.responses.length
       : 0;
 
-    // Use the most reliable count available
-    const total_messages = messagesCount > 0 
-      ? messagesCount 
+    const messagesCount = Array.isArray(conversation.messages)
+      ? conversation.messages.length
+      : 0;
+
+    const total_messages = messagesCount > 0
+      ? messagesCount
       : (questionsCount + responsesCount) || conversation.total_messages || 0;
 
     return {
       ...conversation,
       total_messages,
-      // Ensure questions_asked is always an array
-      questions_asked: Array.isArray(conversation.questions_asked) 
-        ? conversation.questions_asked 
+      questions_asked: Array.isArray(conversation.questions_asked)
+        ? conversation.questions_asked
         : []
     };
   };
@@ -147,27 +143,27 @@ export const ConversationList = ({
                 className={`
                   group flex items-center justify-between p-3 rounded-lg border
                   transition-colors cursor-pointer
-                  ${currentConversationId === conversation.conversation_id 
-                    ? `${theme.accent} text-white` 
+                  ${currentConversationId === conversation.conversation_id
+                    ? `${theme.accent} text-white`
                     : `${theme.bgPrimary} ${theme.border} hover:${theme.bgHover}`
                   }
                 `}
               >
-                <div 
+                <div
                   className="min-w-0 flex-1"
                   onClick={() => onSelectConversation(conversation)}
                 >
                   <div className="flex items-center gap-2">
-                    <MessageSquare 
+                    <MessageSquare
                       className={`h-4 w-4 ${
-                        currentConversationId === conversation.conversation_id 
-                          ? 'text-white' 
+                        currentConversationId === conversation.conversation_id
+                          ? 'text-white'
                           : theme.icon
-                      }`} 
+                      }`}
                     />
                     <p className={`text-sm font-medium truncate ${
-                      currentConversationId === conversation.conversation_id 
-                        ? 'text-white' 
+                      currentConversationId === conversation.conversation_id
+                        ? 'text-white'
                         : theme.text
                     }`}>
                       {getFirstQuestion(conversation)}
@@ -175,16 +171,16 @@ export const ConversationList = ({
                   </div>
                   <div className="flex items-center gap-2 mt-1">
                     <span className={`text-xs ${
-                      currentConversationId === conversation.conversation_id 
-                        ? 'text-white/80' 
+                      currentConversationId === conversation.conversation_id
+                        ? 'text-white/80'
                         : theme.textMuted
                     }`}>
                       {conversation.total_messages} messages
                     </span>
                     {conversation.last_interaction && (
                       <span className={`text-xs flex items-center gap-1 ${
-                        currentConversationId === conversation.conversation_id 
-                          ? 'text-white/80' 
+                        currentConversationId === conversation.conversation_id
+                          ? 'text-white/80'
                           : theme.textMuted
                       }`}>
                         <Clock className="h-3 w-3" />
@@ -199,14 +195,14 @@ export const ConversationList = ({
                   size="icon"
                   onClick={(e) => {
                     e.stopPropagation();
-                    setDeleteDialog({ 
-                      open: true, 
-                      conversationId: conversation.conversation_id 
+                    setDeleteDialog({
+                      open: true,
+                      conversationId: conversation.conversation_id
                     });
                   }}
                   className={`
-                    flex-shrink-0 opacity-0 group-hover:opacity-100 
-                    text-destructive hover:text-destructive 
+                    flex-shrink-0 opacity-0 group-hover:opacity-100
+                    text-destructive hover:text-destructive
                     hover:bg-destructive/10 transition-opacity
                   `}
                 >
@@ -218,8 +214,8 @@ export const ConversationList = ({
         </ScrollArea>
       )}
 
-      <Dialog 
-        open={deleteDialog.open} 
+      <Dialog
+        open={deleteDialog.open}
         onOpenChange={(open) => setDeleteDialog({ open, conversationId: null })}
       >
         <DialogContent className={`${theme.bgPrimary} ${theme.border}`}>

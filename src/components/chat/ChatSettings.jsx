@@ -3,12 +3,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { PROMPT_STRATEGIES, RESPONSE_FORMATS, CONTEXT_MODES } from '../../utils/constants';
 
-export const ChatSettings = ({ 
-  open, 
-  onOpenChange, 
-  settings, 
+export const ChatSettings = ({
+  open,
+  onOpenChange,
+  settings,
   onSettingsChange,
-  theme 
+  theme
 }) => {
   const handleSettingChange = (key, value) => {
     onSettingsChange(prev => ({
@@ -23,7 +23,7 @@ export const ChatSettings = ({
         <DialogHeader>
           <DialogTitle className={theme.text}>Chat Settings</DialogTitle>
         </DialogHeader>
-        
+
         <div className="grid gap-4 py-4">
           <div className="space-y-2">
             <label className={`text-sm font-medium ${theme.text}`}>
@@ -38,8 +38,8 @@ export const ChatSettings = ({
               </SelectTrigger>
               <SelectContent className={`${theme.bgPrimary} ${theme.border}`}>
                 {Object.entries(PROMPT_STRATEGIES).map(([key, value]) => (
-                  <SelectItem 
-                    key={value} 
+                  <SelectItem
+                    key={value}
                     value={value}
                     className={`${theme.text} hover:${theme.bgHover}`}
                   >
@@ -63,8 +63,8 @@ export const ChatSettings = ({
               </SelectTrigger>
               <SelectContent className={`${theme.bgPrimary} ${theme.border}`}>
                 {Object.entries(RESPONSE_FORMATS).map(([key, value]) => (
-                  <SelectItem 
-                    key={value} 
+                  <SelectItem
+                    key={value}
                     value={value}
                     className={`${theme.text} hover:${theme.bgHover}`}
                   >
@@ -88,8 +88,8 @@ export const ChatSettings = ({
               </SelectTrigger>
               <SelectContent className={`${theme.bgPrimary} ${theme.border}`}>
                 {Object.entries(CONTEXT_MODES).map(([key, value]) => (
-                  <SelectItem 
-                    key={value} 
+                  <SelectItem
+                    key={value}
                     value={value}
                     className={`${theme.text} hover:${theme.bgHover}`}
                   >
